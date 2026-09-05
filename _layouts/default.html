@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">Bernardo Riper</div>
+    <nav class="top-nav">
+      <a href="{{ '/' | relative_url }}">início</a>
+      <a href="{{ '/' | relative_url }}#calendario">calendário</a>
+      <a href="{{ '/' | relative_url }}#artigos">artigos</a>
+      <a href="#">contato</a>
+    </nav>
+  </header>
+
+  <nav class="subbar">
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+    <a href="#">menu</a>
+  </nav>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; {{ 'now' | date: "%Y" }} Bernardo Riper</p>
+  </footer>
+
+</body>
+</html>

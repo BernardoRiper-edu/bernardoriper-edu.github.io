@@ -1,0 +1,18 @@
+title: "Bernardo Riper"
+description: "Site pessoal — calendário, artigos e materiais"
+baseurl: "" # se publicar em usuario.github.io/repo, colocar "/repo" aqui
+url: ""
+
+collections:
+  articles:
+    output: true
+    permalink: /artigos/:slug/
+
+defaults:
+  - scope:
+      path: ""
+      type: "articles"
+    values:
+      layout: "article"
+
+markdown: kramdown

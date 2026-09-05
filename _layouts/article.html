@@ -1,0 +1,17 @@
+---
+layout: default
+---
+<article class="article-full">
+  <h1>{{ page.title }}</h1>
+  <p class="article-meta">
+    {{ page.date | date: "%d/%m/%Y" }}
+    {% if page.tags %} · {{ page.tags | join: ", " }}{% endif %}
+  </p>
+  {% if page.image %}
+    <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="article-cover">
+  {% endif %}
+  <div class="article-body">
+    {{ content }}
+  </div>
+  <p><a href="{{ '/' | relative_url }}#artigos">&larr; voltar para artigos</a></p>
+</article>
