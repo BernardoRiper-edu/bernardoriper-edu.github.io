@@ -1,0 +1,25 @@
+{% comment %}
+  Gera as variáveis de cor a partir de _data/escola.yml.
+  As outras cores (tons escuros, texto secundário, bordas) são derivadas
+  das 5 cores da paleta, então nada mais precisa ser editado.
+{% endcomment %}
+{% assign c = site.data.escola.cores %}
+{% assign pagina_da_escola = false %}
+{% if page.escola or page.programas contains "escola" %}{% assign pagina_da_escola = true %}{% endif %}
+<style>
+  :root {
+    --hl-escola: {{ c.destaque }};
+  }
+  {% if site.data.escola.aplicar_no_site_todo or pagina_da_escola %}
+  :root {
+    --ink: {{ c.principal }};
+    --ink-deep: color-mix(in srgb, {{ c.principal }} 78%, #000);
+    --text: {{ c.texto }};
+    --muted: color-mix(in srgb, {{ c.texto }} 72%, {{ c.fundo }});
+    --page: {{ c.fundo }};
+    --grid: {{ c.linhas }};
+    --rule: color-mix(in srgb, {{ c.linhas }} 82%, {{ c.texto }});
+    --hl: {{ c.destaque }};
+  }
+  {% endif %}
+</style>

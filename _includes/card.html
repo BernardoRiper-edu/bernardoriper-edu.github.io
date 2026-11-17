@@ -1,0 +1,27 @@
+{% comment %} Card do mosaico. Uso: {% include card.html a=artigo %}
+A cor da aba vem do primeiro programa do artigo. {% endcomment %}
+{% assign a = include.a %}
+{% assign k1 = a.programas | first %}
+<a class="card {{ a.size | default: 'card-normal' }}{% if a.image %} has-image{% endif %}" href="{{ a.url | relative_url }}"
+   data-programas="{{ a.programas | join: ' ' }}"
+   style="--hl: var(--hl-{{ k1 | default: 'none' }})">
+  {% if a.image %}
+    <img src="{{ a.image | relative_url }}" alt="" loading="lazy" onerror="this.remove()">
+  {% endif %}
+  <div class="card-body">
+    {% if a.programas %}
+      <ul class="tags">
+        {% for k in a.programas %}
+          {% if k == "escola" %}
+            <li style="--hl: var(--hl-escola)">{{ site.data.escola.sigla }}</li>
+          {% elsif site.data.programas[k] %}
+            <li style="--hl: var(--hl-{{ k }})">{{ site.data.programas[k].nome }}</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <h3>{{ a.title }}</h3>
+    {% if a.summary %}<p>{{ a.summary }}</p>{% endif %}
+    <time datetime="{{ a.date | date: '%Y-%m-%d' }}">{{ a.date | date: "%d/%m/%Y" }}</time>
+  </div>
+</a>

@@ -1,7 +1,20 @@
 title: "Bernardo Riper"
-description: "Site pessoal — calendário, artigos e materiais"
+description: "Professor particular de IB, IGCSE, SAT e ENEM. Aulas online e presenciais — agende pelo calendário."
+lang: pt-BR
 baseurl: "" # se publicar em usuario.github.io/repo, colocar "/repo" aqui
-url: ""
+url: "https://bernardoriper-edu.github.io"
+
+# ------------------------------------------------------------------
+# DADOS DE CONTATO — preencha aqui; o site inteiro usa estes valores.
+# Campos vazios simplesmente não aparecem.
+# ------------------------------------------------------------------
+calendly_url: "https://calendly.com/bernardoriper-edu/new-meeting"
+email: ""            # ex.: "bernardo@exemplo.com"
+whatsapp: ""         # só números com DDI+DDD, ex.: "5521999999999"
+instagram: ""        # só o usuário, ex.: "prof.bernardoriper"
+linkedin: ""         # URL completa
+
+author: "Bernardo Riper"
 
 collections:
   articles:
@@ -14,5 +27,12 @@ defaults:
       type: "articles"
     values:
       layout: "article"
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - README.md
 
 markdown: kramdown

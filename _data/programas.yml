@@ -1,0 +1,72 @@
+# Conteúdo das páginas de cada programa.
+# Edite à vontade: textos, disciplinas, formatos. A ordem aqui é a ordem do menu.
+# As cores de cada programa (marca-texto) ficam em assets/css/style.css (--hl-ib, --hl-sat...).
+
+ib:
+  nome: "IB"
+  titulo: "IB Diploma Programme"
+  chamada: "Acompanhamento para o IB Diploma: conteúdo das disciplinas, IAs, Extended Essay e preparação para os exames finais."
+  sobre: >
+    O IB Diploma é um programa de dois anos com seis grupos de disciplinas (três ou quatro em Higher Level),
+    além do núcleo: Theory of Knowledge (TOK), Extended Essay (EE) e CAS. A nota máxima é 45 pontos —
+    até 7 por disciplina e até 3 pontos extras de TOK + EE. Boa parte da nota vem de avaliação interna (IA),
+    então o trabalho ao longo dos dois anos pesa tanto quanto a prova de maio/novembro.
+  ajudo:
+    - "Conteúdo das disciplinas em SL e HL, no ritmo da escola"
+    - "Planejamento e revisão de Internal Assessments (IAs)"
+    - "Orientação de estrutura e pesquisa para o Extended Essay"
+    - "Treino com past papers e markschemes oficiais"
+    - "Plano de revisão para os exames finais"
+  disciplinas: [] # ex.: ["Mathematics AA", "Physics", "Chemistry"]
+  formato: "Aulas semanais ou intensivos antes de prazos e exames. Online ou presencial."
+
+igcse:
+  nome: "IGCSE"
+  titulo: "IGCSE"
+  chamada: "Base sólida para o IGCSE e para a transição ao IB ou A-Levels."
+  sobre: >
+    O IGCSE é a certificação internacional para alunos de 14 a 16 anos (Year 10 e 11 no sistema britânico),
+    oferecida principalmente pelas bancas Cambridge e Pearson Edexcel. Cada disciplina tem seu syllabus e
+    seus papers; conhecer o formato das questões e o vocabulário do markscheme faz muita diferença na nota.
+  ajudo:
+    - "Revisão do syllabus tópico a tópico"
+    - "Técnica de prova: command words e leitura de markscheme"
+    - "Resolução guiada de past papers"
+    - "Escolha entre Core e Extended (quando aplicável)"
+    - "Preparação para mocks e exames finais"
+  disciplinas: []
+  formato: "Aulas semanais durante o ano letivo e intensivo de revisão antes dos exames."
+
+sat:
+  nome: "SAT"
+  titulo: "SAT"
+  chamada: "Preparação para o SAT digital, com foco na pontuação que a sua lista de universidades pede."
+  sobre: >
+    O SAT é feito no computador (app Bluebook) e é adaptativo por módulo: o desempenho no primeiro
+    módulo define a dificuldade do segundo. São duas seções — Reading and Writing e Math — com nota de
+    400 a 1600. A preparação funciona melhor com um diagnóstico inicial, meta definida e simulados oficiais.
+  ajudo:
+    - "Diagnóstico com simulado oficial e definição de meta"
+    - "Math: álgebra, funções, geometria e dados"
+    - "Reading and Writing: interpretação, gramática e vocabulário em contexto"
+    - "Estratégia de tempo e uso da calculadora Desmos"
+    - "Calendário de provas alinhado aos prazos de aplicação"
+  disciplinas: []
+  formato: "Pacotes de preparação de 8 a 12 semanas ou aulas avulsas para pontos específicos."
+
+enem:
+  nome: "ENEM"
+  titulo: "ENEM"
+  chamada: "Preparação para o ENEM com foco em desempenho na TRI e na redação."
+  sobre: >
+    O ENEM tem 180 questões de múltipla escolha divididas em quatro áreas — Linguagens, Ciências Humanas,
+    Ciências da Natureza e Matemática — e uma redação dissertativo-argumentativa, aplicados em dois domingos.
+    A correção das objetivas usa a TRI, que valoriza coerência: acertar as fáceis conta muito.
+  ajudo:
+    - "Plano de estudos por área, a partir de um diagnóstico"
+    - "Matemática e Ciências da Natureza com foco no que mais cai"
+    - "Estratégia de prova e de tempo pensando na TRI"
+    - "Correção de redações pelas cinco competências"
+    - "Simulados e revisão de provas anteriores"
+  disciplinas: []
+  formato: "Acompanhamento semanal ao longo do ano ou reta final de revisão."

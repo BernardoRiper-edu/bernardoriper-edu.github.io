@@ -1,17 +1,31 @@
 ---
 layout: default
 ---
-<article class="article-full">
-  <h1>{{ page.title }}</h1>
-  <p class="article-meta">
-    {{ page.date | date: "%d/%m/%Y" }}
-    {% if page.tags %} · {{ page.tags | join: ", " }}{% endif %}
-  </p>
+{% assign k1 = page.programas | first %}
+<article class="wrap article" style="--hl: var(--hl-{{ k1 | default: 'none' }})">
+  <header class="article-head">
+    <p class="article-back"><a href="{{ '/' | relative_url }}#artigos">Todos os artigos</a></p>
+    <h1>{{ page.title }}</h1>
+    <p class="article-meta">
+      <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: "%d/%m/%Y" }}</time>
+      {% if page.programas %}
+        <span class="tags">
+          {% for k in page.programas %}
+            {% if k == "escola" %}<a href="{{ '/escola/' | relative_url }}" style="--hl: var(--hl-escola)">{{ site.data.escola.sigla }}</a>
+            {% elsif site.data.programas[k] %}<a href="{{ '/' | append: k | append: '/' | relative_url }}" style="--hl: var(--hl-{{ k }})">{{ site.data.programas[k].nome }}</a>{% endif %}
+          {% endfor %}
+        </span>
+      {% endif %}
+    </p>
+  </header>
   {% if page.image %}
-    <img src="{{ page.image | relative_url }}" alt="{{ page.title }}" class="article-cover">
+    <img src="{{ page.image | relative_url }}" alt="" class="article-cover" onerror="this.remove()">
   {% endif %}
-  <div class="article-body">
+  <div class="prose article-body">
     {{ content }}
   </div>
-  <p><a href="{{ '/' | relative_url }}#artigos">&larr; voltar para artigos</a></p>
 </article>
+
+{% unless page.programas contains "escola" %}
+  {% include cta.html %}
+{% endunless %}

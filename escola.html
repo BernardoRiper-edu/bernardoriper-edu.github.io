@@ -1,0 +1,87 @@
+---
+layout: default
+title: "Materiais e avisos da escola"
+permalink: /escola/
+escola: true
+description: "Materiais, avisos e plantão de dúvidas para os alunos."
+---
+{% comment %} Todo o conteúdo e as cores vêm de _data/escola.yml {% endcomment %}
+{% assign t = site.data.escola %}
+
+<div style="--hl: var(--hl-escola)">
+
+<section class="page-hero grid-paper">
+  <div class="wrap school-hero">
+    {% if t.logo != "" and t.logo %}
+      <img class="school-logo" src="{{ t.logo | relative_url }}" alt="{{ t.nome }}">
+    {% endif %}
+    <div>
+      <h1><span class="marked">{{ t.nome }}</span></h1>
+      <p class="lead">{{ t.intro }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap block">
+  <div class="block-head"><h2>Avisos</h2></div>
+  {% assign sorted_articles = site.articles | sort: "date" | reverse %}
+  {% assign n = 0 %}
+  <div class="mosaic">
+    {% for a in sorted_articles %}
+      {% if a.programas contains "escola" %}
+        {% include card.html a=a %}
+        {% assign n = n | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if n == 0 %}<p class="empty-msg">Nenhum aviso no momento.</p>{% endif %}
+</section>
+
+<section class="wrap block">
+  <div class="block-head"><h2>Materiais por turma</h2></div>
+  <div class="folders">
+    {% for turma in t.turmas %}
+      <div class="folder">
+        <h3>{{ turma.nome }}</h3>
+        <p class="muted">{{ turma.disciplina }}</p>
+        <ul class="link-list">
+          {% for l in turma.links %}
+            <li>
+              {% if l.url != "" and l.url %}
+                <a href="{{ l.url | relative_url }}" target="_blank" rel="noopener">{{ l.titulo }}</a>
+              {% else %}
+                <span>{{ l.titulo }}</span> <span class="soon">em breve</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="wrap block split">
+  <section>
+    <h2>Plantão de dúvidas</h2>
+    <p>{{ t.plantao.texto }}</p>
+    {% if t.plantao.url != "" and t.plantao.url %}
+      <a class="btn" href="{{ t.plantao.url }}" target="_blank" rel="noopener">Agendar plantão</a>
+    {% endif %}
+  </section>
+  <section>
+    <h2>Links úteis</h2>
+    <ul class="link-list">
+      {% for l in t.links_uteis %}
+        <li>
+          {% if l.url != "" and l.url %}
+            <a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.titulo }}</a>
+          {% else %}
+            <span>{{ l.titulo }}</span> <span class="soon">em breve</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+</div>

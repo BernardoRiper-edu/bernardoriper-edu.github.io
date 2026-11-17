@@ -1,0 +1,57 @@
+---
+layout: default
+---
+{% assign p = site.data.programas[page.programa] %}
+
+<div style="--hl: var(--hl-{{ page.programa }})">
+
+<section class="page-hero grid-paper">
+  <div class="wrap">
+    <h1><span class="marked">{{ p.titulo }}</span></h1>
+    <p class="lead">{{ p.chamada }}</p>
+    {% include agendar.html texto="Agendar primeira aula" %}
+  </div>
+</section>
+
+<div class="wrap block split">
+  <section class="prose">
+    <h2>Sobre o {{ p.nome }}</h2>
+    <p>{{ p.sobre }}</p>
+    {% if p.disciplinas and p.disciplinas.size > 0 %}
+      <h3>Disciplinas</h3>
+      <ul class="tags tags-lg">
+        {% for d in p.disciplinas %}<li>{{ d }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  </section>
+
+  <section class="help">
+    <h2>Como posso ajudar</h2>
+    <ul class="check-list">
+      {% for item in p.ajudo %}<li>{{ item }}</li>{% endfor %}
+    </ul>
+    <h3>Formato</h3>
+    <p>{{ p.formato }}</p>
+  </section>
+</div>
+
+{{ content }}
+
+<section class="wrap block">
+  <div class="block-head"><h2>Artigos de {{ p.nome }}</h2></div>
+  {% assign sorted_articles = site.articles | sort: "date" | reverse %}
+  {% assign n = 0 %}
+  <div class="mosaic">
+    {% for a in sorted_articles %}
+      {% if a.programas contains page.programa %}
+        {% include card.html a=a %}
+        {% assign n = n | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if n == 0 %}<p class="empty-msg">Os artigos de {{ p.nome }} vão aparecer aqui.</p>{% endif %}
+</section>
+
+{% include cta.html %}
+
+</div>
