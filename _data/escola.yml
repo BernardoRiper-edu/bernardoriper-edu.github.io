@@ -1,0 +1,56 @@
+# =================================================================
+#  ESCOLA ATUAL — mude só este arquivo quando trocar de colégio.
+#  Nome, cores e materiais se ajustam no site inteiro.
+# =================================================================
+
+nome: "TBS"                     # nome completo, se quiser (ex.: "The British School")
+sigla: "TBS"                    # aparece no menu, nos filtros e nas etiquetas
+funcao: "assistant teacher"     # seu papel na escola
+logo: ""                        # opcional, ex.: /assets/img/logo-escola.png
+
+# -----------------------------------------------------------------
+#  PALETA — 5 cores em hexadecimal.
+#  Coloque aqui as cores do colégio (as do logo ou do uniforme).
+#  Os valores abaixo são provisórios: troque pelas cores da TBS.
+# -----------------------------------------------------------------
+cores:
+  principal: "#1d3a6e"   # botões, links, faixa de chamada no fim da página
+  destaque:  "#e8b923"   # marca-texto: etiquetas, aba dos cards, título da página
+                         # (use uma cor clara ou viva: o texto fica escuro por cima dela)
+  texto:     "#14182b"   # títulos e texto
+  fundo:     "#f4f6fb"   # fundo das páginas
+  linhas:    "#dde3f0"   # quadriculado e bordas
+
+# true  → a paleta da escola vale para o site inteiro
+# false → só a página da escola (e os avisos dela) usam essas cores;
+#         as páginas de aulas particulares mantêm o visual padrão
+aplicar_no_site_todo: false
+
+# -----------------------------------------------------------------
+#  CONTEÚDO DA PÁGINA /escola/
+#  Itens com "url" vazio aparecem como "em breve".
+# -----------------------------------------------------------------
+intro: >
+  Espaço de apoio para os alunos e turmas em que atuo como assistant teacher:
+  materiais de aula, listas de exercícios, avisos e horários de plantão.
+
+plantao:
+  texto: "Consulte o horário do plantão com o professor da turma."
+  url: ""   # opcional: link de agendamento do plantão
+
+turmas:
+  - nome: "Turma / Year — editar"
+    disciplina: "Disciplina — editar"
+    links:
+      - titulo: "Materiais de aula"
+        url: ""
+      - titulo: "Listas de exercícios"
+        url: ""
+      - titulo: "Gabaritos"
+        url: ""
+
+links_uteis:
+  - titulo: "Calendário escolar"
+    url: ""
+  - titulo: "Plataforma da escola (Classroom / Teams)"
+    url: ""

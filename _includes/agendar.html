@@ -1,0 +1,3 @@
+{% comment %} Botão que abre o Calendly em popup. Parâmetros opcionais: texto, classe {% endcomment %}
+<a href="{{ site.calendly_url }}" class="{{ include.classe | default: 'btn' }}"
+   onclick="if (window.Calendly) { Calendly.initPopupWidget({url: '{{ site.calendly_url }}?hide_gdpr_banner=1'}); return false; }">{{ include.texto | default: "Agendar aula" }}</a>

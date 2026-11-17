@@ -1,34 +1,90 @@
 ---
 layout: default
-title: Bernardo Riper
+title: Bernardo Riper — Aulas de IB, IGCSE, SAT e ENEM
 ---
 
-<section id="calendario" class="section">
-  <h2>Calendário</h2>
+<section id="calendario" class="booking grid-paper">
+  <div class="wrap booking-row">
+    <div class="booking-intro">
+      <h1>Aulas particulares de IB, IGCSE, SAT e ENEM</h1>
+      <p class="lead">Escolha um horário para a primeira aula. Nela entendemos seu objetivo e seus prazos e montamos um plano de estudo.</p>
+      <ul class="program-pills">
+        {% for p in site.data.programas %}
+          <li><a href="{{ '/' | append: p[0] | append: '/' | relative_url }}" style="--hl: var(--hl-{{ p[0] }})">{{ p[1].nome }}</a></li>
+        {% endfor %}
+      </ul>
+      <p class="booking-note"><a href="{{ '/aulas/' | relative_url }}">Como funcionam as aulas</a></p>
+    </div>
 
-  <!-- Calendly inline embed -->
-  <div class="calendly-inline-widget"
-       data-url="https://calendly.com/bernardoriper-edu/new-meeting?hide_gdpr_banner=1"
-       style="min-width:320px;height:700px;">
+    <div class="sheet">
+      <div class="calendly-inline-widget"
+           data-url="{{ site.calendly_url }}?hide_gdpr_banner=1&background_color=ffffff&primary_color=2337a8"
+           style="min-width:300px;height:680px;">
+      </div>
+      <noscript><p><a href="{{ site.calendly_url }}">Abrir o calendário</a></p></noscript>
+    </div>
   </div>
-  <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
 </section>
 
-<section id="artigos" class="section">
-  <h2>Artigos</h2>
+<section id="artigos" class="wrap block">
+  <div class="block-head">
+    <h2>Artigos</h2>
+    <div class="chips" role="group" aria-label="Filtrar artigos por programa">
+      <button class="chip" aria-pressed="true" data-filtro="">Todos</button>
+      {% for p in site.data.programas %}
+        <button class="chip" aria-pressed="false" data-filtro="{{ p[0] }}" style="--hl: var(--hl-{{ p[0] }})">{{ p[1].nome }}</button>
+      {% endfor %}
+      <button class="chip" aria-pressed="false" data-filtro="escola" style="--hl: var(--hl-escola)">{{ site.data.escola.sigla }}</button>
+    </div>
+  </div>
 
-  <div class="grid">
+  <div class="mosaic" id="mosaico">
     {% assign sorted_articles = site.articles | sort: "date" | reverse %}
     {% for a in sorted_articles %}
-      <a class="card {{ a.size | default: 'card-normal' }}" href="{{ a.url | relative_url }}" style="{% if a.color %}background:{{ a.color }};{% endif %}">
-        {% if a.image %}
-          <img src="{{ a.image | relative_url }}" alt="{{ a.title }}">
-        {% endif %}
-        <div class="card-body">
-          <h3>{{ a.title }}</h3>
-          {% if a.summary %}<p>{{ a.summary }}</p>{% endif %}
-        </div>
-      </a>
+      {% include card.html a=a %}
     {% endfor %}
   </div>
+  <p class="empty-msg" id="mosaico-vazio" hidden>Nenhum artigo deste programa ainda.</p>
 </section>
+
+<section id="programas" class="wrap block">
+  <div class="block-head"><h2>Programas</h2></div>
+  <ul class="program-rows">
+    {% for p in site.data.programas %}
+      <li style="--hl: var(--hl-{{ p[0] }})">
+        <a href="{{ '/' | append: p[0] | append: '/' | relative_url }}">
+          <span class="row-name">{{ p[1].nome }}</span>
+          <span class="row-text">{{ p[1].chamada }}</span>
+        </a>
+      </li>
+    {% endfor %}
+    <li style="--hl: var(--hl-escola)">
+      <a href="{{ '/escola/' | relative_url }}">
+        <span class="row-name">{{ site.data.escola.sigla }}</span>
+        <span class="row-text">Materiais, avisos e plantão de dúvidas para alunos da {{ site.data.escola.sigla }}.</span>
+      </a>
+    </li>
+  </ul>
+</section>
+
+<script>
+  (function () {
+    var chips = document.querySelectorAll('.chip');
+    var cards = document.querySelectorAll('#mosaico .card');
+    var vazio = document.getElementById('mosaico-vazio');
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var f = chip.getAttribute('data-filtro');
+        chips.forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+        var visiveis = 0;
+        cards.forEach(function (card) {
+          var tags = (card.getAttribute('data-programas') || '').split(' ');
+          var show = !f || tags.indexOf(f) !== -1;
+          card.hidden = !show;
+          if (show) visiveis++;
+        });
+        vazio.hidden = visiveis > 0;
+      });
+    });
+  })();
+</script>

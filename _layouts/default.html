@@ -3,38 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title | default: site.title }}</title>
+  {% seo %}
+  <link rel="preload" href="{{ '/assets/fonts/bricolage.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  {% include paleta-escola.html %}
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="brand">Bernardo Riper</div>
-    <nav class="top-nav">
-      <a href="{{ '/' | relative_url }}">início</a>
-      <a href="{{ '/' | relative_url }}#calendario">calendário</a>
-      <a href="{{ '/' | relative_url }}#artigos">artigos</a>
-      <a href="#">contato</a>
-    </nav>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="{{ '/' | relative_url }}">
+        <span class="brand-name">Bernardo Riper</span>
+        <span class="brand-role">professor</span>
+      </a>
+
+      <nav class="programs-nav" aria-label="Programas">
+        {% for p in site.data.programas %}
+          {% assign key = p[0] %}
+          <a href="{{ '/' | append: key | append: '/' | relative_url }}" style="--hl: var(--hl-{{ key }})"{% if page.programa == key %} aria-current="page"{% endif %}>{{ p[1].nome }}</a>
+        {% endfor %}
+        <a href="{{ '/escola/' | relative_url }}" style="--hl: var(--hl-escola)"{% if page.url == '/escola/' %} aria-current="page"{% endif %}>{{ site.data.escola.sigla }}</a>
+      </nav>
+
+      <nav class="util-nav" aria-label="Site">
+        <a href="{{ '/aulas/' | relative_url }}"{% if page.url == '/aulas/' %} aria-current="page"{% endif %}>Como funcionam as aulas</a>
+        <a href="{{ '/contato/' | relative_url }}"{% if page.url == '/contato/' %} aria-current="page"{% endif %}>Contato</a>
+        {% include agendar.html classe="btn btn-small" %}
+      </nav>
+    </div>
   </header>
 
-  <nav class="subbar">
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-    <a href="#">menu</a>
-  </nav>
-
-  <main>
+  <main id="conteudo">
     {{ content }}
   </main>
 
   <footer class="site-footer">
-    <p>&copy; {{ 'now' | date: "%Y" }} Bernardo Riper</p>
+    <div class="wrap footer-row">
+      <div>
+        <p class="footer-name">Bernardo Riper</p>
+        <p class="muted">Aulas de IB, IGCSE, SAT e ENEM.</p>
+      </div>
+      {% include contato-links.html %}
+      <p class="muted">&copy; {{ 'now' | date: "%Y" }}</p>
+    </div>
   </footer>
 
 </body>
