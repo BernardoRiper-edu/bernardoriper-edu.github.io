@@ -16,12 +16,11 @@ title: Bernardo Riper — Aulas de IB, IGCSE, SAT e ENEM
       <p class="booking-note"><a href="{{ '/aulas/' | relative_url }}">Como funcionam as aulas</a></p>
     </div>
 
-    <div class="sheet">
-      <div class="calendly-inline-widget"
-           data-url="{{ site.calendly_url }}?hide_gdpr_banner=1&background_color=ffffff&primary_color=2337a8"
-           style="min-width:300px;height:680px;">
-      </div>
-      <noscript><p><a href="{{ site.calendly_url }}">Abrir o calendário</a></p></noscript>
+    <div class="sheet cal-sheet">
+      {% include calendly-carregando.html %}
+      <iframe class="cal-frame" src="{% include calendly-src.html %}"
+              title="Calendário para agendar aula"
+              onload="this.parentNode.classList.add('is-loaded')"></iframe>
     </div>
   </div>
 </section>

@@ -7,8 +7,8 @@
   <link rel="preload" href="{{ '/assets/fonts/bricolage.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% include paleta-escola.html %}
-  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <link rel="preconnect" href="https://calendly.com">
+  <link rel="preconnect" href="https://assets.calendly.com" crossorigin>
 </head>
 <body>
 
@@ -51,6 +51,59 @@
       <p class="muted">&copy; {{ 'now' | date: "%Y" }}</p>
     </div>
   </footer>
+
+  <dialog class="cal-dialog" id="cal-dialog" aria-label="Agendar aula">
+    <button class="cal-close" type="button" aria-label="Fechar calendário">&times;</button>
+    <div class="cal-sheet">
+      {% include calendly-carregando.html %}
+    </div>
+  </dialog>
+
+  <script>
+    (function () {
+      var SRC = "{% include calendly-src.html %}";
+      var dialog = document.getElementById('cal-dialog');
+      var sheet = dialog.querySelector('.cal-sheet');
+      var inline = document.querySelector('.booking .cal-frame');
+
+      // Cria o iframe só quando for preciso, e já começa a carregar quando o mouse passa no botão.
+      function prepara() {
+        if (sheet.querySelector('iframe')) return;
+        var f = document.createElement('iframe');
+        f.className = 'cal-frame';
+        f.title = 'Calendário para agendar aula';
+        f.src = SRC;
+        f.addEventListener('load', function () { sheet.classList.add('is-loaded'); });
+        sheet.appendChild(f);
+      }
+
+      function alvo(e) { return e.target.closest && e.target.closest('[data-agendar]'); }
+
+      ['pointerover', 'focusin', 'touchstart'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+          if (alvo(e) && !inline) prepara();
+        }, { passive: true });
+      });
+
+      document.addEventListener('click', function (e) {
+        var a = alvo(e);
+        if (!a) return;
+        // Na página inicial o calendário já está aberto: só rola até ele.
+        if (inline) {
+          e.preventDefault();
+          document.getElementById('calendario').scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+        if (typeof dialog.showModal !== 'function') return; // navegador antigo: segue o link
+        e.preventDefault();
+        prepara();
+        dialog.showModal();
+      });
+
+      dialog.querySelector('.cal-close').addEventListener('click', function () { dialog.close(); });
+      dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
+    })();
+  </script>
 
 </body>
 </html>
