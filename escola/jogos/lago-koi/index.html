@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Koi Pond Multiplayer — Lago das Carpas</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #051923;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #e0f7fa;
+    }
+
+    #pondCanvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      cursor: pointer;
+    }
+
+    /* HUD Superior Esquerdo */
+    .hud-panel {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: rgba(6, 28, 38, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(128, 222, 234, 0.25);
+      border-radius: 14px;
+      padding: 12px 16px;
+      pointer-events: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      max-width: 290px;
+      z-index: 10;
+    }
+
+    .hud-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: #80deea;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00e676;
+      box-shadow: 0 0 8px #00e676;
+      display: inline-block;
+    }
+
+    .status-dot.offline {
+      background: #ffab40;
+      box-shadow: 0 0 8px #ffab40;
+    }
+
+    .hud-row {
+      font-size: 13px;
+      color: #b2ebf2;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .hud-row strong {
+      color: #ffffff;
+    }
+
+    .danger-badge {
+      margin-top: 8px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: rgba(255, 82, 82, 0.18);
+      border: 1px solid rgba(255, 82, 82, 0.4);
+      color: #ff8a80;
+      font-size: 12px;
+      display: none;
+    }
+
+    /* Controles Superiores Direitos */
+    .top-right-controls {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .hint-pill {
+      background: rgba(6, 28, 38, 0.65);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(128, 222, 234, 0.2);
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #b2ebf2;
+      pointer-events: none;
+    }
+
+    .audio-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(128, 222, 234, 0.35);
+      background: rgba(6, 28, 38, 0.78);
+      color: #e0f7fa;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .audio-btn:hover {
+      transform: scale(1.08);
+      background: rgba(14, 54, 72, 0.9);
+    }
+
+    /* Botão Circular de Alimentar (Canto Inferior Direito) */
+    #feedBtn {
+      position: fixed;
+      bottom: 26px;
+      right: 26px;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 236, 179, 0.85);
+      background: radial-gradient(circle at 30% 30%, #ffb74d, #e65100);
+      color: #fff;
+      font-size: 30px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(230, 81, 0, 0.5), inset 0 2px 6px rgba(255, 255, 255, 0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+      z-index: 15;
+    }
+
+    #feedBtn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 14px 30px rgba(255, 152, 0, 0.65), inset 0 2px 8px rgba(255, 255, 255, 0.6);
+    }
+
+    #feedBtn:active {
+      transform: scale(0.92);
+    }
+
+    #feedBtn span {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Notificações Centrais / Eventos */
+    #toastBanner {
+      position: fixed;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(10, 35, 48, 0.88);
+      border: 1px solid rgba(255, 183, 77, 0.5);
+      color: #ffe082;
+      padding: 10px 22px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      text-align: center;
+    }
+
+    #toastBanner.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Tela de Sala Cheia */
+    #fullRoomOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 15, 22, 0.92);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 24px;
+      z-index: 100;
+    }
+
+    @media (max-width: 640px) {
+      .hint-pill { display: none; }
+      #feedBtn { width: 64px; height: 64px; bottom: 20px; right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="pondCanvas"></canvas>
+
+  <!-- HUD Principal -->
+  <div class="hud-panel">
+    <div class="hud-title">
+      <span class="status-dot" id="connDot"></span>
+      <span id="connStatusText">Conectando ao Lago...</span>
+    </div>
+    <div class="hud-row" id="playerCountText">Jogadores conectados: 0 / 20</div>
+    <div class="hud-row" id="localFishText">Seu peixe: <strong>Carregando...</strong></div>
+    <div class="hud-row" id="heaviestFishText">Mais pesado: <strong>—</strong></div>
+    <div class="danger-badge" id="catfishAlert">⚠️ Sombra gigante nas profundezas...</div>
+  </div>
+
+  <!-- Controles Superiores Direitos -->
+  <div class="top-right-controls">
+    <div class="hint-pill">Clique na água para atrair seu peixe • Botão para alimentar</div>
+    <button class="audio-btn" id="audioToggleBtn" title="Ativar/Desativar Música e Sons">🔇</button>
+  </div>
+
+  <!-- Banner de Eventos -->
+  <div id="toastBanner"></div>
+
+  <!-- Botão Circular de Ração -->
+  <button id="feedBtn" title="Soltar ração no lago">
+    🍤
+    <span>Ração</span>
+  </button>
+
+  <!-- Aviso de Sala Lotada -->
+  <div id="fullRoomOverlay">
+    <h2 style="color: #80deea; margin-bottom: 10px;">O Lago está cheio! (20/20 jogadores)</h2>
+    <p style="color: #b2ebf2; max-width: 400px;">Aguarde um aluno sair da sala e recarregue a página para entrar com seu peixe.</p>
+  </div>
+
+  <!-- Script Principal com Firebase SDK v13.4.0 (Web Modules via CDN) -->
+  <script type="module">
+    // Importa as funções necessárias dos SDKs do Firebase v13.4.0
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-analytics.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      update,
+      remove,
+      onValue,
+      onDisconnect,
+      get
+    } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
+
+    // =========================================================================
+    // 1. CONFIGURAÇÃO DO FIREBASE (Credenciais do projeto koi-pond-774ea)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDOcHcSaq66jINZCzPOLIVcScwT2S2Ma_Y",
+      authDomain: "koi-pond-774ea.firebaseapp.com",
+      projectId: "koi-pond-774ea",
+      storageBucket: "koi-pond-774ea.firebasestorage.app",
+      messagingSenderId: "722372828762",
+      appId: "1:722372828762:web:5b239c034e4d3e52bac263",
+      measurementId: "G-LBSW0EXBHL"
+      // Nota: Se você criou o Realtime Database fora da região padrão (us-central1),
+      // adicione a linha abaixo com a URL exibida no console do Realtime Database:
+      // databaseURL: "https://koi-pond-774ea-default-rtdb.firebaseio.com"
+    };
+
+    const MAX_JOGADORES = 20;
+    const SALA_PATH = "sala_unica";
+
+    // =========================================================================
+    // 2. IMAGENS DOS AVATARES (Pasta ./images/ no seu repositório GitHub Pages)
+    // =========================================================================
+    const AVATAR_FILES = [
+      "images/avatar1.png",
+      "images/avatar2.png",
+      "images/avatar3.png",
+      "images/avatar4.png",
+      "images/avatar5.png",
+      "images/avatar6.png",
+      "images/avatar7.png",
+      "images/avatar8.png"
+    ];
+
+    const loadedAvatars = AVATAR_FILES.map((src) => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
+
+    // Nomes aleatórios criativos para os peixes dos alunos
+    const NOMES_PEIXES = [
+      "Nemo", "Dourado", "Koi Zen", "Bolha", "Pipoca", "Sushi", "Tubarãozinho",
+      "Pérola", "Coral", "Zeca", "Lótus", "Biscoito", "Netuno", "Maré",
+      "Faísca", "Veludo", "Pingo", "Brisa", "Cometa", "Yuki", "Sora", "Kuro",
+      "Aka", "Hana", "Taro", "Mochi", "Bambu", "Orvalho", "Onda", "Estrela"
+    ];
+
+    // Paletas de cores para o quadrado/peixe do jogador
+    const PALETAS_KOI = [
+      { nome: "Kohaku", base: "#f8f9fa", mancha1: "#ff3d00", mancha2: "#ff6e40", corHex: "#ff3d00" },
+      { nome: "Sanke", base: "#ffffff", mancha1: "#e53935", mancha2: "#212121", corHex: "#e53935" },
+      { nome: "Ogon Ouro", base: "#ffd54f", mancha1: "#ffb300", mancha2: "#fff8e1", corHex: "#ffb300" },
+      { nome: "Asagi", base: "#90caf9", mancha1: "#ff7043", mancha2: "#37474f", corHex: "#42a5f5" },
+      { nome: "Showa", base: "#263238", mancha1: "#ff5252", mancha2: "#eceff1", corHex: "#ff5252" },
+      { nome: "Sakura", base: "#fce4ec", mancha1: "#f06292", mancha2: "#ff80ab", corHex: "#f06292" },
+      { nome: "Esmeralda", base: "#e0f2f1", mancha1: "#00bfa5", mancha2: "#004d40", corHex: "#00bfa5" },
+      { nome: "Ametista", base: "#f3e5f5", mancha1: "#ab47bc", mancha2: "#4a148c", corHex: "#ab47bc" }
+    ];
+
+    // =========================================================================
+    // 3. MOTOR DE ÁUDIO PROCEDURAL RELAXANTE (Web Audio API)
+    // =========================================================================
+    class PondAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = false;
+        this.musicTimer = null;
+        this.masterGain = null;
+        this.scale = [261.63, 293.66, 349.23, 392.00, 440.00, 523.25, 587.33, 698.46];
+      }
+
+      toggle() {
+        if (!this.enabled) {
+          this.init();
+          this.enabled = true;
+          if (this.ctx.state === "suspended") this.ctx.resume();
+          this.masterGain.gain.setTargetAtTime(0.35, this.ctx.currentTime, 0.5);
+          this.startAmbientLoop();
+        } else {
+          this.enabled = false;
+          if (this.masterGain && this.ctx) {
+            this.masterGain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.3);
+          }
+          clearInterval(this.musicTimer);
+        }
+        return this.enabled;
+      }
+
+      unlockOnGesture() {
+        if (this.enabled && this.ctx && this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.0001;
+        this.masterGain.connect(this.ctx.destination);
+
+        // Ruído suave de água corrente
+        const bufferSize = this.ctx.sampleRate * 3;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          data[i] = (lastOut + 0.02 * white) / 1.02;
+          lastOut = data[i];
+          data[i] *= 0.12;
+        }
+        const waterNoise = this.ctx.createBufferSource();
+        waterNoise.buffer = noiseBuffer;
+        waterNoise.loop = true;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 340;
+
+        waterNoise.connect(filter);
+        filter.connect(this.masterGain);
+        waterNoise.start();
+      }
+
+      startAmbientLoop() {
+        clearInterval(this.musicTimer);
+        this.musicTimer = setInterval(() => {
+          if (!this.enabled || !this.ctx) return;
+          if (Math.random() < 0.72) {
+            const freq = this.scale[Math.floor(Math.random() * this.scale.length)];
+            this.playKotoNote(freq);
+          }
+        }, 1600);
+      }
+
+      playKotoNote(freq) {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.14, now + 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.0008, now + 2.8);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 2.9);
+      }
+
+      playSplash(pitch = 420, volume = 0.25) {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(pitch * 0.6, now);
+        osc.frequency.exponentialRampToValueAtTime(pitch * 1.6, now + 0.14);
+
+        gain.gain.setValueAtTime(volume, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      }
+
+      playCatfishSuspense() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(58, now);
+        osc.frequency.linearRampToValueAtTime(44, now + 3.5);
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 130;
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(0.32, now + 1.0);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 4.0);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 4.1);
+      }
+
+      playCatfishStrike() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(140, now);
+        osc.frequency.exponentialRampToValueAtTime(32, now + 0.55);
+
+        gain.gain.setValueAtTime(0.55, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.65);
+      }
+    }
+
+    const audio = new PondAudioEngine();
+
+    // =========================================================================
+    // 4. ESTADO DO JOGO E INICIALIZAÇÃO DO JOGADOR LOCAL
+    // =========================================================================
+    const canvas = document.getElementById("pondCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const bgCanvas = document.createElement("canvas");
+    const bgCtx = bgCanvas.getContext("2d");
+
+    // ID único do jogador local gerado via Math.random()
+    const LOCAL_ID = "player_" + Math.random().toString(36).substring(2, 11);
+    const paletaEscolhida = PALETAS_KOI[Math.floor(Math.random() * PALETAS_KOI.length)];
+    const nomeEscolhido = NOMES_PEIXES[Math.floor(Math.random() * NOMES_PEIXES.length)] +
+      " #" + Math.floor(10 + Math.random() * 89);
+    const avatarIdxEscolhido = Math.floor(Math.random() * AVATAR_FILES.length);
+
+    // Estado local do peixe do jogador
+    const localPlayer = {
+      id: LOCAL_ID,
+      nome: nomeEscolhido,
+      cor: paletaEscolhida.corHex,
+      paletaIdx: PALETAS_KOI.indexOf(paletaEscolhida),
+      avatarIdx: avatarIdxEscolhido,
+      x: 0.2 + Math.random() * 0.6,
+      y: 0.2 + Math.random() * 0.6,
+      z: 0.35 + Math.random() * 0.4,
+      vx: (Math.random() - 0.5) * 0.06,
+      vy: (Math.random() - 0.5) * 0.06,
+      vz: 0,
+      angle: Math.random() * Math.PI * 2,
+      peso: 100,
+      shieldUntil: 0,
+      aiState: "wandering",
+      stateTimer: 2 + Math.random() * 3,
+      targetX: null,
+      targetY: null,
+      targetZ: null
+    };
+
+    let jogadoresAtivos = {};
+    const visualFishes = {};
+
+    let comidas = [];
+    let ripples = [];
+    let particles = [];
+    let lilyPads = [];
+    let riverPlants = [];
+    let screenShake = 0;
+
+    let catfish = {
+      state: "hidden",
+      x: -0.2,
+      y: 0.5,
+      z: 0.02,
+      angle: 0,
+      targetId: null,
+      timer: 18,
+      tailPhase: 0
+    };
+
+    // =========================================================================
+    // 5. INTEGRAÇÃO COM FIREBASE REALTIME DATABASE E ANALYTICS (v13.4.0)
+    // =========================================================================
+    const isFirebaseConfigured = Boolean(
+      firebaseConfig.apiKey && firebaseConfig.apiKey !== "SEU_API_KEY"
+    );
+
+    let app = null;
+    let analytics = null;
+    let db = null;
+    let salaRef = null;
+    let localPlayerRef = null;
+    let comidasRef = null;
+    let bagreRef = null;
+
+    const connDot = document.getElementById("connDot");
+    const connStatusText = document.getElementById("connStatusText");
+
+    async function initMultiplayer() {
+      if (!isFirebaseConfigured) {
+        connDot.classList.add("offline");
+        connStatusText.textContent = "Modo Local (Configure o Firebase)";
+        jogadoresAtivos[LOCAL_ID] = serializeLocalPlayer();
+        return;
+      }
+
+      try {
+        // Inicializa Firebase App e Analytics
+        app = initializeApp(firebaseConfig);
+        try {
+          analytics = getAnalytics(app);
+        } catch (analyticsErr) {
+          // Evita falha caso o navegador use bloqueador de rastreadores
+          console.warn("Analytics não inicializado:", analyticsErr);
+        }
+
+        db = getDatabase(app);
+        salaRef = ref(db, SALA_PATH);
+        localPlayerRef = ref(db, `${SALA_PATH}/${LOCAL_ID}`);
+        comidasRef = ref(db, `${SALA_PATH}/_mundo/comidas`);
+        bagreRef = ref(db, `${SALA_PATH}/_mundo/bagre`);
+
+        // Verifica limite de 20 jogadores antes de entrar
+        const snapshot = await get(salaRef);
+        const dadosAtuais = snapshot.val() || {};
+        const qtdAtual = Object.keys(dadosAtuais).filter((k) => k.startsWith("player_")).length;
+
+        if (qtdAtual >= MAX_JOGADORES && !dadosAtuais[LOCAL_ID]) {
+          document.getElementById("fullRoomOverlay").style.display = "flex";
+          return;
+        }
+
+        // Remove automaticamente o nó do jogador ao fechar a aba ou desconectar
+        await onDisconnect(localPlayerRef).remove();
+
+        // Salva posição inicial (x, y, z) e cor no caminho 'sala_unica/ID_DO_JOGADOR'
+        await set(localPlayerRef, serializeLocalPlayer());
+
+        connDot.classList.remove("offline");
+        connStatusText.textContent = "Conectado ao Lago Global";
+
+        // Escuta o nó inteiro 'sala_unica' e atualiza todos os jogadores ativos
+        onValue(salaRef, (snap) => {
+          const data = snap.val() || {};
+          const novosJogadores = {};
+
+          for (const [key, val] of Object.entries(data)) {
+            if (key.startsWith("player_") && val) {
+              novosJogadores[key] = val;
+            }
+          }
+
+          jogadoresAtivos = novosJogadores;
+
+          // Sincroniza comidas compartilhadas
+          const mundo = data._mundo || {};
+          if (mundo.comidas) {
+            const listaRemota = Object.entries(mundo.comidas).map(([id, c]) => ({
+              id,
+              ...c
+            }));
+            const agora = Date.now();
+            comidas = listaRemota.filter((c) => agora - (c.createdAt || agora) < 25000);
+          } else {
+            comidas = [];
+          }
+
+          // Sincroniza estado do bagre se não formos o host atual
+          if (mundo.bagre && !isRoomHost()) {
+            const prevState = catfish.state;
+            Object.assign(catfish, mundo.bagre);
+            if (prevState !== "shadow_prowl" && catfish.state === "shadow_prowl") {
+              audio.playCatfishSuspense();
+              showToast("⚠️ Uma sombra colossal desliza no fundo do lago...");
+            }
+            if (prevState !== "strike" && catfish.state === "strike") {
+              audio.playCatfishStrike();
+              screenShake = 14;
+            }
+          }
+
+          // Verifica se o peixe local foi devorado pelo bagre
+          if (
+            mundo.ultimoDevorado &&
+            mundo.ultimoDevorado.targetId === LOCAL_ID &&
+            Date.now() - mundo.ultimoDevorado.timestamp < 3000 &&
+            Date.now() > localPlayer.shieldUntil
+          ) {
+            localPlayer.peso = 100;
+            localPlayer.shieldUntil = Date.now() + 10000;
+            localPlayer.z = 0.2;
+            showToast(`😱 O Bagre Gigante devorou ${localPlayer.nome}! Peso resetado para 100g.`);
+          }
+
+          updateHUD();
+        });
+      } catch (err) {
+        console.error("Erro ao conectar ao Firebase:", err);
+        connDot.classList.add("offline");
+        connStatusText.textContent = "Erro Firebase (Modo Offline)";
+        jogadoresAtivos[LOCAL_ID] = serializeLocalPlayer();
+      }
+    }
+
+    function serializeLocalPlayer() {
+      return {
+        id: localPlayer.id,
+        nome: localPlayer.nome,
+        cor: localPlayer.cor,
+        paletaIdx: localPlayer.paletaIdx,
+        avatarIdx: localPlayer.avatarIdx,
+        x: Number(localPlayer.x.toFixed(4)),
+        y: Number(localPlayer.y.toFixed(4)),
+        z: Number(localPlayer.z.toFixed(3)),
+        angle: Number(localPlayer.angle.toFixed(3)),
+        peso: Math.round(localPlayer.peso),
+        updatedAt: Date.now()
+      };
+    }
+
+    function isRoomHost() {
+      const ids = Object.keys(jogadoresAtivos).sort();
+      return ids.length === 0 || ids[0] === LOCAL_ID;
+    }
+
+    let lastFirebaseSync = 0;
+    function syncLocalMovement(now) {
+      if (!isFirebaseConfigured || !localPlayerRef) {
+        jogadoresAtivos[LOCAL_ID] = serializeLocalPlayer();
+        return;
+      }
+      if (now - lastFirebaseSync > 80) {
+        lastFirebaseSync = now;
+        update(localPlayerRef, serializeLocalPlayer()).catch(() => {});
+      }
+    }
+
+    // =========================================================================
+    // 6. MECÂNICA DE ALIMENTAÇÃO E INTERAÇÃO NA ÁGUA
+    // =========================================================================
+    function dropFishFood(customX = null, customY = null) {
+      audio.unlockOnGesture();
+      audio.playSplash(520, 0.28);
+
+      const centerX = customX !== null ? customX : 0.25 + Math.random() * 0.5;
+      const centerY = customY !== null ? customY : 0.25 + Math.random() * 0.5;
+
+      addRipple(centerX, centerY, 0.09, "rgba(255, 224, 130, 0.65)");
+
+      const novosGraos = {};
+      for (let i = 0; i < 6; i++) {
+        const foodId = "food_" + Date.now() + "_" + Math.floor(Math.random() * 9999);
+        const fx = Math.min(0.94, Math.max(0.06, centerX + (Math.random() - 0.5) * 0.08));
+        const fy = Math.min(0.94, Math.max(0.06, centerY + (Math.random() - 0.5) * 0.08));
+        const pellet = { x: fx, y: fy, createdAt: Date.now() };
+        novosGraos[foodId] = pellet;
+
+        if (!isFirebaseConfigured) {
+          comidas.push({ id: foodId, ...pellet });
+        }
+      }
+
+      if (isFirebaseConfigured && comidasRef) {
+        update(comidasRef, novosGraos).catch(() => {});
+      }
+    }
+
+    document.getElementById("feedBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropFishFood();
+    });
+
+    document.getElementById("audioToggleBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const active = audio.toggle();
+      e.currentTarget.textContent = active ? "🔊" : "🔇";
+      if (active) showToast("🎵 Som relaxante do lago ativado");
+    });
+
+    canvas.addEventListener("pointerdown", (e) => {
+      audio.unlockOnGesture();
+      const rect = canvas.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width;
+      const ny = (e.clientY - rect.top) / rect.height;
+
+      addRipple(nx, ny, 0.07, "rgba(178, 235, 242, 0.55)");
+      audio.playSplash(680, 0.14);
+
+      localPlayer.aiState = "seeking";
+      localPlayer.targetX = nx;
+      localPlayer.targetY = ny;
+      localPlayer.targetZ = 0.78;
+      localPlayer.stateTimer = 3.5;
+    });
+
+    // =========================================================================
+    // 7. AMBIENTE DO LAGO (PEDRAS, VITÓRIAS-RÉGIAS, PLANTAS E ONDAS)
+    // =========================================================================
+    function buildEnvironment() {
+      const w = canvas.width;
+      const h = canvas.height;
+      bgCanvas.width = w;
+      bgCanvas.height = h;
+
+      const grad = bgCtx.createRadialGradient(w * 0.5, h * 0.5, w * 0.08, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
+      grad.addColorStop(0, "#0e4d5c");
+      grad.addColorStop(0.55, "#083340");
+      grad.addColorStop(1, "#031821");
+      bgCtx.fillStyle = grad;
+      bgCtx.fillRect(0, 0, w, h);
+
+      const stoneCount = Math.floor((w * h) / 14000);
+      for (let i = 0; i < stoneCount; i++) {
+        const sx = Math.random() * w;
+        const sy = Math.random() * h;
+        const rx = 6 + Math.random() * 22;
+        const ry = rx * (0.6 + Math.random() * 0.35);
+        const rot = Math.random() * Math.PI;
+
+        bgCtx.save();
+        bgCtx.translate(sx, sy);
+        bgCtx.rotate(rot);
+        bgCtx.beginPath();
+        bgCtx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        const shade = 14 + Math.floor(Math.random() * 24);
+        bgCtx.fillStyle = `rgba(${shade}, ${shade + 28}, ${shade + 34}, 0.42)`;
+        bgCtx.fill();
+        bgCtx.restore();
+      }
+
+      riverPlants = [];
+      for (let i = 0; i < 14; i++) {
+        riverPlants.push({
+          x: Math.random(),
+          y: Math.random(),
+          blades: 4 + Math.floor(Math.random() * 4),
+          len: 28 + Math.random() * 40,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+
+      lilyPads = [];
+      const padPositions = [
+        { x: 0.11, y: 0.16, r: 34, flower: true },
+        { x: 0.16, y: 0.22, r: 22, flower: false },
+        { x: 0.86, y: 0.18, r: 38, flower: true },
+        { x: 0.82, y: 0.78, r: 30, flower: false },
+        { x: 0.14, y: 0.82, r: 28, flower: true }
+      ];
+      padPositions.forEach((p, idx) => {
+        lilyPads.push({
+          ...p,
+          notchAngle: idx * 1.3,
+          bobPhase: idx * 0.9
+        });
+      });
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      buildEnvironment();
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function addRipple(nx, ny, maxR = 0.06, color = "rgba(224, 247, 250, 0.5)") {
+      ripples.push({ x: nx, y: ny, r: 0.004, maxR, alpha: 0.85, color });
+    }
+
+    function spawnEatParticles(nx, ny, color) {
+      for (let i = 0; i < 8; i++) {
+        const a = (Math.PI * 2 * i) / 8 + Math.random() * 0.4;
+        const spd = 0.03 + Math.random() * 0.05;
+        particles.push({
+          x: nx,
+          y: ny,
+          vx: Math.cos(a) * spd,
+          vy: Math.sin(a) * spd,
+          life: 0.65,
+          color,
+          size: 3 + Math.random() * 2.5
+        });
+      }
+    }
+
+    // =========================================================================
+    // 8. FÍSICA PROCEDURAL, COLISÃO 3D E COMPORTAMENTO DOS PEIXES
+    // =========================================================================
+    function updateLocalFishAI(dt) {
+      const p = localPlayer;
+      p.stateTimer -= dt;
+
+      let nearestFood = null;
+      let minFoodDist = 0.42;
+      for (const f of comidas) {
+        const d = Math.hypot(f.x - p.x, f.y - p.y);
+        if (d < minFoodDist) {
+          minFoodDist = d;
+          nearestFood = f;
+        }
+      }
+
+      if (nearestFood) {
+        p.aiState = "seeking";
+        p.targetX = nearestFood.x;
+        p.targetY = nearestFood.y;
+        p.targetZ = 0.92;
+      } else if (p.stateTimer <= 0) {
+        const roll = Math.random();
+        if (roll < 0.55) {
+          p.aiState = "wandering";
+          p.targetX = 0.08 + Math.random() * 0.84;
+          p.targetY = 0.08 + Math.random() * 0.84;
+          p.targetZ = 0.15 + Math.random() * 0.72;
+          p.stateTimer = 2.5 + Math.random() * 3.5;
+        } else if (roll < 0.78) {
+          p.aiState = "surfacing";
+          p.targetX = Math.min(0.92, Math.max(0.08, p.x + (Math.random() - 0.5) * 0.25));
+          p.targetY = Math.min(0.92, Math.max(0.08, p.y + (Math.random() - 0.5) * 0.25));
+          p.targetZ = 0.96;
+          p.stateTimer = 2.8 + Math.random() * 1.5;
+        } else {
+          p.aiState = "pausing";
+          p.stateTimer = 1.4 + Math.random() * 1.8;
+        }
+      }
+
+      let maxSpeed = p.aiState === "seeking" ? 0.135 : p.aiState === "pausing" ? 0.012 : 0.068;
+
+      if (p.aiState !== "pausing" && p.targetX !== null) {
+        const dx = p.targetX - p.x;
+        const dy = p.targetY - p.y;
+        const dz = (p.targetZ ?? 0.5) - p.z;
+        const dist = Math.hypot(dx, dy) || 0.001;
+
+        const desiredVx = (dx / dist) * maxSpeed;
+        const desiredVy = (dy / dist) * maxSpeed;
+        const desiredVz = dz * 1.2;
+
+        p.vx += (desiredVx - p.vx) * 2.4 * dt;
+        p.vy += (desiredVy - p.vy) * 2.4 * dt;
+        p.vz += (desiredVz - p.vz) * 2.2 * dt;
+
+        if (p.aiState === "surfacing" && p.z > 0.91 && Math.random() < 2.2 * dt) {
+          addRipple(p.x, p.y, 0.045, "rgba(224, 247, 250, 0.5)");
+          audio.playSplash(780, 0.09);
+        }
+      } else {
+        p.vx *= Math.pow(0.25, dt);
+        p.vy *= Math.pow(0.25, dt);
+        p.vz *= Math.pow(0.25, dt);
+      }
+
+      // Colisão 3D com outros peixes
+      const myRadius = getFishCollisionRadius(p.peso);
+      for (const [otherId, other] of Object.entries(jogadoresAtivos)) {
+        if (otherId === LOCAL_ID || !other) continue;
+        const dx = p.x - other.x;
+        const dy = p.y - other.y;
+        const dz = (p.z - (other.z ?? 0.5)) * 0.35;
+        const dist3D = Math.hypot(dx, dy, dz) || 0.0001;
+        const minSep = myRadius + getFishCollisionRadius(other.peso || 100);
+
+        if (dist3D < minSep) {
+          const overlap = (minSep - dist3D) / minSep;
+          const push = overlap * 0.28;
+          p.vx += (dx / dist3D) * push;
+          p.vy += (dy / dist3D) * push;
+          p.vz += (dz / dist3D) * push * 1.8;
+
+          p.x += (dx / dist3D) * (minSep - dist3D) * 0.5;
+          p.y += (dy / dist3D) * (minSep - dist3D) * 0.5;
+          p.z = Math.min(0.97, Math.max(0.08, p.z + (dz / dist3D) * (minSep - dist3D) * 0.8));
+        }
+      }
+
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.z += p.vz * dt;
+
+      const margin = 0.04;
+      if (p.x < margin) { p.x = margin; p.vx = Math.abs(p.vx) * 0.7; p.targetX = 0.5; }
+      if (p.x > 1 - margin) { p.x = 1 - margin; p.vx = -Math.abs(p.vx) * 0.7; p.targetX = 0.5; }
+      if (p.y < margin) { p.y = margin; p.vy = Math.abs(p.vy) * 0.7; p.targetY = 0.5; }
+      if (p.y > 1 - margin) { p.y = 1 - margin; p.vy = -Math.abs(p.vy) * 0.7; p.targetY = 0.5; }
+      p.z = Math.min(0.97, Math.max(0.08, p.z));
+
+      const speed = Math.hypot(p.vx, p.vy);
+      if (speed > 0.004) {
+        const targetAngle = Math.atan2(p.vy, p.vx);
+        let diff = targetAngle - p.angle;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        p.angle += diff * Math.min(1, 7 * dt);
+      }
+
+      // Consumo de ração
+      for (let i = comidas.length - 1; i >= 0; i--) {
+        const f = comidas[i];
+        const dist = Math.hypot(f.x - p.x, f.y - p.y);
+        if (dist < myRadius * 1.15 && p.z > 0.75) {
+          p.peso = Math.min(950, p.peso + 22);
+          addRipple(f.x, f.y, 0.055, "rgba(255, 213, 79, 0.75)");
+          spawnEatParticles(f.x, f.y, "#ffd54f");
+          audio.playSplash(620, 0.22);
+
+          if (isFirebaseConfigured && db) {
+            remove(ref(db, `${SALA_PATH}/_mundo/comidas/${f.id}`)).catch(() => {});
+          }
+          comidas.splice(i, 1);
+        }
+      }
+    }
+
+    function getFishCollisionRadius(peso) {
+      return 0.024 + Math.min(0.025, (peso - 100) * 0.00003);
+    }
+
+    // =========================================================================
+    // 9. LÓGICA DO BAGRE GIGANTE (SOMBRA SUSPENSE + BOTE NO MAIS PESADO)
+    // =========================================================================
+    function updateCatfish(dt) {
+      catfish.tailPhase += dt * (catfish.state === "strike" ? 16 : 4.5);
+
+      if (!isRoomHost()) {
+        if (catfish.state !== "hidden") {
+          catfish.x += Math.cos(catfish.angle) * (catfish.state === "strike" ? 0.35 : 0.055) * dt;
+          catfish.y += Math.sin(catfish.angle) * (catfish.state === "strike" ? 0.35 : 0.055) * dt;
+        }
+        return;
+      }
+
+      catfish.timer -= dt;
+      const listaPeixes = Object.values(jogadoresAtivos);
+
+      if (catfish.state === "hidden") {
+        if (catfish.timer <= 0 && listaPeixes.length > 0) {
+          catfish.state = "shadow_prowl";
+          catfish.timer = 7.5;
+          catfish.z = 0.02;
+          const fromLeft = Math.random() < 0.5;
+          catfish.x = fromLeft ? -0.15 : 1.15;
+          catfish.y = 0.2 + Math.random() * 0.6;
+          catfish.angle = fromLeft ? 0 : Math.PI;
+
+          audio.playCatfishSuspense();
+          showToast("⚠️ Uma sombra gigante desliza no fundo do lago...");
+          broadcastCatfish();
+        }
+      } else if (catfish.state === "shadow_prowl") {
+        catfish.x += Math.cos(catfish.angle) * 0.075 * dt;
+        catfish.y += Math.sin(catfish.angle) * 0.075 * dt;
+
+        let heaviest = null;
+        for (const fish of listaPeixes) {
+          if (!heaviest || (fish.peso || 100) > (heaviest.peso || 100)) {
+            heaviest = fish;
+          }
+        }
+        catfish.targetId = heaviest ? heaviest.id : null;
+
+        if (catfish.timer <= 0) {
+          if (heaviest) {
+            catfish.state = "strike";
+            catfish.timer = 4.0;
+            const edgeAngle = Math.atan2(heaviest.y - 0.5, heaviest.x - 0.5);
+            catfish.x = 0.5 + Math.cos(edgeAngle) * 0.68;
+            catfish.y = 0.5 + Math.sin(edgeAngle) * 0.68;
+            catfish.angle = Math.atan2(heaviest.y - catfish.y, heaviest.x - catfish.x);
+            catfish.z = 0.25;
+
+            audio.playCatfishStrike();
+            broadcastCatfish();
+          } else {
+            catfish.state = "hidden";
+            catfish.timer = 22;
+            broadcastCatfish();
+          }
+        }
+      } else if (catfish.state === "strike") {
+        const target = jogadoresAtivos[catfish.targetId];
+        if (target) {
+          const dx = target.x - catfish.x;
+          const dy = target.y - catfish.y;
+          const dist = Math.hypot(dx, dy);
+          catfish.angle = Math.atan2(dy, dx);
+          catfish.z = Math.min(0.85, catfish.z + dt * 0.9);
+
+          const strikeSpeed = 0.44;
+          catfish.x += Math.cos(catfish.angle) * strikeSpeed * dt;
+          catfish.y += Math.sin(catfish.angle) * strikeSpeed * dt;
+
+          if (dist < 0.045) {
+            addRipple(target.x, target.y, 0.16, "rgba(255, 82, 82, 0.85)");
+            spawnEatParticles(target.x, target.y, "#ff5252");
+            screenShake = 18;
+            audio.playCatfishStrike();
+
+            if (target.id === LOCAL_ID) {
+              localPlayer.peso = 100;
+              localPlayer.shieldUntil = Date.now() + 10000;
+              localPlayer.z = 0.15;
+              showToast(`😱 O Bagre Gigante devorou ${localPlayer.nome}!`);
+            } else {
+              showToast(`💥 O Bagre Gigante devorou ${target.nome}!`);
+            }
+
+            if (isFirebaseConfigured && db) {
+              update(ref(db, `${SALA_PATH}/_mundo`), {
+                ultimoDevorado: {
+                  targetId: target.id,
+                  nome: target.nome,
+                  timestamp: Date.now()
+                }
+              }).catch(() => {});
+            }
+
+            catfish.state = "hidden";
+            catfish.timer = 26 + Math.random() * 12;
+            catfish.x = -0.3;
+            broadcastCatfish();
+          }
+        }
+
+        if (catfish.timer <= 0 && catfish.state === "strike") {
+          catfish.state = "hidden";
+          catfish.timer = 25;
+          broadcastCatfish();
+        }
+      }
+    }
+
+    function broadcastCatfish() {
+      if (isFirebaseConfigured && bagreRef) {
+        set(bagreRef, {
+          state: catfish.state,
+          x: Number(catfish.x.toFixed(3)),
+          y: Number(catfish.y.toFixed(3)),
+          z: Number(catfish.z.toFixed(2)),
+          angle: Number(catfish.angle.toFixed(3)),
+          targetId: catfish.targetId || null
+        }).catch(() => {});
+      }
+    }
+
+    // =========================================================================
+    // 10. RENDERIZAÇÃO PROCEDURAL DE ALTA QUALIDADE (HTML5 CANVAS)
+    // =========================================================================
+    function syncVisualFishes(dt) {
+      for (const id of Object.keys(visualFishes)) {
+        if (!jogadoresAtivos[id]) {
+          delete visualFishes[id];
+        }
+      }
+
+      for (const [id, data] of Object.entries(jogadoresAtivos)) {
+        if (!visualFishes[id]) {
+          const spine = [];
+          for (let i = 0; i < 10; i++) {
+            spine.push({ x: data.x, y: data.y });
+          }
+          visualFishes[id] = {
+            x: data.x,
+            y: data.y,
+            z: data.z ?? 0.5,
+            angle: data.angle ?? 0,
+            swimPhase: Math.random() * Math.PI * 2,
+            spine
+          };
+        }
+
+        const vf = visualFishes[id];
+        const targetX = id === LOCAL_ID ? localPlayer.x : data.x;
+        const targetY = id === LOCAL_ID ? localPlayer.y : data.y;
+        const targetZ = id === LOCAL_ID ? localPlayer.z : (data.z ?? 0.5);
+        const targetAngle = id === LOCAL_ID ? localPlayer.angle : (data.angle ?? 0);
+
+        const prevX = vf.x;
+        const prevY = vf.y;
+        const lerpFactor = id === LOCAL_ID ? 1 : Math.min(1, 10 * dt);
+
+        vf.x += (targetX - vf.x) * lerpFactor;
+        vf.y += (targetY - vf.y) * lerpFactor;
+        vf.z += (targetZ - vf.z) * lerpFactor;
+
+        let diff = targetAngle - vf.angle;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        vf.angle += diff * lerpFactor;
+
+        const moveDist = Math.hypot(vf.x - prevX, vf.y - prevY);
+        vf.swimPhase += (2.5 + moveDist * 260) * dt;
+
+        const peso = id === LOCAL_ID ? localPlayer.peso : (data.peso || 100);
+        const depthScale = 0.68 + vf.z * 0.45;
+        const weightScale = 1 + Math.min(0.85, (peso - 100) / 800);
+        const segLen = (7.2 * depthScale * weightScale) / Math.max(canvas.width, 600);
+
+        vf.spine[0].x = vf.x;
+        vf.spine[0].y = vf.y;
+
+        for (let i = 1; i < vf.spine.length; i++) {
+          const prev = vf.spine[i - 1];
+          const curr = vf.spine[i];
+          const dx = curr.x - prev.x;
+          const dy = curr.y - prev.y;
+          const d = Math.hypot(dx, dy) || 0.0001;
+          const baseAngle = Math.atan2(dy, dx);
+          const wag = Math.sin(vf.swimPhase - i * 0.55) * (0.045 * (i / 9));
+          const finalAngle = baseAngle + wag;
+
+          curr.x = prev.x + Math.cos(finalAngle) * Math.min(d, segLen);
+          curr.y = prev.y + Math.sin(finalAngle) * Math.min(d, segLen);
+        }
+      }
+    }
+
+    function drawCaustics(timeSec) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.strokeStyle = "rgba(128, 222, 234, 0.055)";
+      ctx.lineWidth = 2;
+
+      const step = 130;
+      for (let x = 0; x < w + step; x += step) {
+        for (let y = 0; y < h + step; y += step) {
+          const ox = Math.sin(timeSec * 0.8 + y * 0.01) * 24;
+          const oy = Math.cos(timeSec * 0.7 + x * 0.01) * 24;
+          ctx.beginPath();
+          ctx.arc(x + ox, y + oy, 48 + Math.sin(timeSec + x) * 10, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawRiverPlants(timeSec) {
+      const w = canvas.width;
+      const h = canvas.height;
+      for (const pl of riverPlants) {
+        const bx = pl.x * w;
+        const by = pl.y * h;
+        for (let b = 0; b < pl.blades; b++) {
+          const sway = Math.sin(timeSec * 1.4 + pl.phase + b) * 14;
+          const angle = -Math.PI / 2 + (b - pl.blades / 2) * 0.28;
+          const tx = bx + Math.cos(angle) * pl.len + sway;
+          const ty = by + Math.sin(angle) * pl.len;
+
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.quadraticCurveTo(bx + sway * 0.5, (by + ty) * 0.5, tx, ty);
+          ctx.strokeStyle = "rgba(38, 166, 154, 0.26)";
+          ctx.lineWidth = 3.5;
+          ctx.lineCap = "round";
+          ctx.stroke();
+        }
+      }
+    }
+
+    function drawCatfish(timeSec) {
+      if (catfish.state === "hidden") return;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = catfish.x * w;
+      const cy = catfish.y * h;
+      const isStrike = catfish.state === "strike";
+      const scale = isStrike ? 1.45 : 1.25;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(catfish.angle);
+      ctx.scale(scale, scale);
+
+      ctx.fillStyle = isStrike ? "rgba(18, 24, 28, 0.92)" : "rgba(2, 12, 18, 0.44)";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.65)";
+      ctx.shadowBlur = isStrike ? 22 : 35;
+
+      const wag = Math.sin(catfish.tailPhase) * 14;
+      ctx.beginPath();
+      ctx.moveTo(75, 0);
+      ctx.bezierCurveTo(65, -34, 15, -38, -30, -22);
+      ctx.quadraticCurveTo(-85, -12 + wag * 0.5, -135, wag);
+      ctx.quadraticCurveTo(-85, 12 + wag * 0.5, -30, 22);
+      ctx.bezierCurveTo(15, 38, 65, 34, 75, 0);
+      ctx.fill();
+
+      ctx.strokeStyle = isStrike ? "rgba(60, 75, 82, 0.9)" : "rgba(2, 12, 18, 0.45)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(64, -18);
+      ctx.quadraticCurveTo(95, -48 + Math.sin(timeSec * 5) * 6, 115, -38);
+      ctx.moveTo(64, 18);
+      ctx.quadraticCurveTo(95, 48 - Math.sin(timeSec * 5) * 6, 115, 38);
+      ctx.stroke();
+
+      if (isStrike) {
+        ctx.fillStyle = "#ff5252";
+        ctx.beginPath();
+        ctx.arc(48, -16, 4, 0, Math.PI * 2);
+        ctx.arc(48, 16, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawSingleKoi(id, data, vf) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const peso = id === LOCAL_ID ? localPlayer.peso : (data.peso || 100);
+      const paleta = PALETAS_KOI[data.paletaIdx % PALETAS_KOI.length] || PALETAS_KOI[0];
+      const depthScale = 0.68 + vf.z * 0.45;
+      const weightScale = 1 + Math.min(0.85, (peso - 100) / 800);
+      const totalScale = depthScale * weightScale;
+
+      const pts = vf.spine.map((s) => ({ x: s.x * w, y: s.y * h }));
+      const head = pts[0];
+      const tail = pts[pts.length - 1];
+
+      // 1. Sombra projetada no fundo do lago
+      const shadowOffset = 12 + vf.z * 38;
+      ctx.save();
+      ctx.strokeStyle = `rgba(1, 10, 15, ${0.32 - vf.z * 0.1})`;
+      ctx.lineCap = "round";
+      ctx.lineWidth = 22 * totalScale;
+      ctx.beginPath();
+      ctx.moveTo(pts[1].x + shadowOffset, pts[1].y + shadowOffset);
+      for (let i = 2; i < pts.length - 1; i++) {
+        ctx.lineTo(pts[i].x + shadowOffset, pts[i].y + shadowOffset);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // 2. Barbatanas peitorais animadas
+      const finAngle = Math.sin(vf.swimPhase) * 0.35;
+      ctx.save();
+      ctx.translate(pts[2].x, pts[2].y);
+      ctx.rotate(vf.angle);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+
+      ctx.save();
+      ctx.rotate(-0.65 + finAngle);
+      ctx.beginPath();
+      ctx.ellipse(-4 * totalScale, -16 * totalScale, 13 * totalScale, 6 * totalScale, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.rotate(0.65 - finAngle);
+      ctx.beginPath();
+      ctx.ellipse(-4 * totalScale, 16 * totalScale, 13 * totalScale, 6 * totalScale, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.restore();
+
+      // 3. Cauda em leque ondulante
+      const tailAngle = Math.atan2(tail.y - pts[pts.length - 2].y, tail.x - pts[pts.length - 2].x);
+      ctx.save();
+      ctx.translate(tail.x, tail.y);
+      ctx.rotate(tailAngle);
+      ctx.fillStyle = paleta.base;
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(14 * totalScale, -14 * totalScale, 24 * totalScale, -8 * totalScale);
+      ctx.quadraticCurveTo(16 * totalScale, 0, 24 * totalScale, 8 * totalScale);
+      ctx.quadraticCurveTo(14 * totalScale, 14 * totalScale, 0, 0);
+      ctx.fill();
+      ctx.restore();
+
+      // 4. Corpo orgânico da carpa
+      const widths = [10, 14.5, 16, 15, 13, 10.5, 8, 5.8, 3.8, 2.2].map((r) => r * totalScale);
+      const leftPts = [];
+      const rightPts = [];
+
+      for (let i = 0; i < pts.length; i++) {
+        const curr = pts[i];
+        const next = pts[Math.min(pts.length - 1, i + 1)];
+        const prev = pts[Math.max(0, i - 1)];
+        const ang = Math.atan2(prev.y - next.y, prev.x - next.x);
+        const perp = ang + Math.PI / 2;
+        leftPts.push({
+          x: curr.x + Math.cos(perp) * widths[i],
+          y: curr.y + Math.sin(perp) * widths[i]
+        });
+        rightPts.push({
+          x: curr.x - Math.cos(perp) * widths[i],
+          y: curr.y - Math.sin(perp) * widths[i]
+        });
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(head.x, head.y, widths[0], vf.angle - Math.PI / 2, vf.angle + Math.PI / 2);
+      for (let i = 1; i < rightPts.length; i++) {
+        ctx.lineTo(rightPts[i].x, rightPts[i].y);
+      }
+      for (let i = leftPts.length - 1; i >= 1; i--) {
+        ctx.lineTo(leftPts[i].x, leftPts[i].y);
+      }
+      ctx.closePath();
+
+      ctx.fillStyle = paleta.base;
+      ctx.fill();
+
+      ctx.clip();
+      ctx.fillStyle = paleta.mancha1;
+      ctx.beginPath();
+      ctx.arc(pts[1].x, pts[1].y, 9.5 * totalScale, 0, Math.PI * 2);
+      ctx.arc(pts[4].x, pts[4].y, 11 * totalScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = paleta.mancha2;
+      ctx.beginPath();
+      ctx.arc(pts[3].x + 3 * totalScale, pts[3].y - 3 * totalScale, 6.5 * totalScale, 0, Math.PI * 2);
+      ctx.arc(pts[6].x, pts[6].y, 5.5 * totalScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (vf.z < 0.85) {
+        const deepTint = (0.85 - vf.z) * 0.58;
+        ctx.fillStyle = `rgba(7, 52, 66, ${deepTint.toFixed(2)})`;
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 5. Olhos da carpa
+      ctx.save();
+      ctx.translate(head.x, head.y);
+      ctx.rotate(vf.angle);
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(4 * totalScale, -7.2 * totalScale, 2.2 * totalScale, 0, Math.PI * 2);
+      ctx.arc(4 * totalScale, 7.2 * totalScale, 2.2 * totalScale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 6. Imagem aleatória e Nome no topo da cabeça
+      const badgeRadius = 15 * Math.max(0.8, depthScale);
+      const badgeX = head.x;
+      const badgeY = head.y - (24 + widths[0]) * Math.max(0.85, depthScale);
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(head.x, head.y - 4);
+      ctx.lineTo(badgeX, badgeY + badgeRadius);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
+      ctx.fillStyle = data.cor || "#00acc1";
+      ctx.fill();
+      ctx.lineWidth = id === LOCAL_ID ? 2.5 : 1.5;
+      ctx.strokeStyle = id === LOCAL_ID ? "#ffd54f" : "#ffffff";
+      ctx.stroke();
+
+      const avatarImg = loadedAvatars[data.avatarIdx % loadedAvatars.length];
+      if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(badgeX, badgeY, badgeRadius - 1.5, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(
+          avatarImg,
+          badgeX - badgeRadius,
+          badgeY - badgeRadius,
+          badgeRadius * 2,
+          badgeRadius * 2
+        );
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = `bold ${Math.round(12 * Math.max(0.8, depthScale))}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText((data.nome || "K")[0].toUpperCase(), badgeX, badgeY);
+      }
+
+      const label = `${data.nome || "Koi"} (${Math.round(peso)}g)`;
+      ctx.font = `${id === LOCAL_ID ? "700" : "600"} 12px 'Segoe UI', sans-serif`;
+      const textW = ctx.measureText(label).width;
+      const pillY = badgeY - badgeRadius - 13;
+
+      ctx.fillStyle = id === LOCAL_ID ? "rgba(6, 28, 38, 0.85)" : "rgba(6, 28, 38, 0.65)";
+      ctx.beginPath();
+      ctx.roundRect(badgeX - textW / 2 - 6, pillY - 8, textW + 12, 16, 8);
+      ctx.fill();
+
+      ctx.fillStyle = id === LOCAL_ID ? "#ffe082" : "#e0f7fa";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, badgeX, pillY);
+      ctx.restore();
+    }
+
+    function drawFoodPellets(timeSec) {
+      const w = canvas.width;
+      const h = canvas.height;
+      for (const f of comidas) {
+        const fx = f.x * w + Math.sin(timeSec * 2 + f.y * 20) * 3;
+        const fy = f.y * h + Math.cos(timeSec * 2 + f.x * 20) * 3;
+
+        ctx.beginPath();
+        ctx.arc(fx, fy, 8, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 213, 79, 0.25)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(fx, fy, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#ff8f00";
+        ctx.fill();
+        ctx.strokeStyle = "#ffe082";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+    }
+
+    function drawRipplesAndParticles(dt) {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const rp = ripples[i];
+        rp.r += 0.045 * dt;
+        rp.alpha -= 0.65 * dt;
+        if (rp.alpha <= 0 || rp.r >= rp.maxR) {
+          ripples.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.strokeStyle = rp.color;
+        ctx.globalAlpha = Math.max(0, rp.alpha);
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.arc(rp.x * w, rp.y * h, rp.r * Math.min(w, h), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const pt = particles[i];
+        pt.x += pt.vx * dt;
+        pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if (pt.life <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, pt.life * 1.4);
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x * w, pt.y * h, pt.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawLilyPads(timeSec) {
+      const w = canvas.width;
+      const h = canvas.height;
+      for (const pad of lilyPads) {
+        const px = pad.x * w + Math.sin(timeSec * 0.9 + pad.bobPhase) * 4;
+        const py = pad.y * h + Math.cos(timeSec * 0.8 + pad.bobPhase) * 4;
+
+        ctx.save();
+        ctx.fillStyle = "rgba(1, 12, 18, 0.35)";
+        ctx.beginPath();
+        ctx.arc(px + 10, py + 12, pad.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.translate(px, py);
+        ctx.rotate(pad.notchAngle + Math.sin(timeSec * 0.4 + pad.bobPhase) * 0.08);
+        const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, pad.r);
+        grad.addColorStop(0, "#66bb6a");
+        grad.addColorStop(1, "#2e7d32");
+        ctx.fillStyle = grad;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, pad.r, 0.22, Math.PI * 2 - 0.22);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#1b5e20";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        if (pad.flower) {
+          for (let p = 0; p < 8; p++) {
+            ctx.save();
+            ctx.rotate((Math.PI * 2 * p) / 8);
+            ctx.fillStyle = p % 2 === 0 ? "#f8bbd0" : "#ffffff";
+            ctx.beginPath();
+            ctx.ellipse(7, 0, 7, 3.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          ctx.fillStyle = "#ffd54f";
+          ctx.beginPath();
+          ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // 11. ATUALIZAÇÃO DO HUD E TOASTS
+    // =========================================================================
+    let toastTimeout = null;
+    function showToast(msg) {
+      const banner = document.getElementById("toastBanner");
+      banner.textContent = msg;
+      banner.classList.add("show");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => banner.classList.remove("show"), 4200);
+    }
+
+    function updateHUD() {
+      const lista = Object.values(jogadoresAtivos);
+      document.getElementById("playerCountText").textContent =
+        `Jogadores conectados: ${lista.length} / ${MAX_JOGADORES}`;
+
+      document.getElementById("localFishText").innerHTML =
+        `Seu peixe: <strong>${localPlayer.nome} (${Math.round(localPlayer.peso)}g)</strong>`;
+
+      let heaviest = null;
+      for (const f of lista) {
+        if (!heaviest || (f.peso || 100) > (heaviest.peso || 100)) {
+          heaviest = f;
+        }
+      }
+
+      if (heaviest) {
+        const isMe = heaviest.id === LOCAL_ID;
+        document.getElementById("heaviestFishText").innerHTML =
+          `Alvo do Bagre: <strong style="color:${isMe ? "#ff8a80" : "#ffe082"}">${heaviest.nome} (${Math.round(heaviest.peso || 100)}g)</strong>`;
+      }
+
+      const alertBadge = document.getElementById("catfishAlert");
+      alertBadge.style.display = catfish.state !== "hidden" ? "block" : "none";
+      alertBadge.textContent =
+        catfish.state === "strike"
+          ? "🚨 BAGRE GIGANTE ATACANDO!"
+          : "⚠️ Sombra gigante nas profundezas...";
+    }
+
+    // =========================================================================
+    // 12. LOOP PRINCIPAL DE ANIMAÇÃO (60 FPS)
+    // =========================================================================
+    let lastTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+      const timeSec = now / 1000;
+
+      updateLocalFishAI(dt);
+      syncLocalMovement(now);
+      updateCatfish(dt);
+      syncVisualFishes(dt);
+      updateHUD();
+
+      ctx.save();
+      if (screenShake > 0) {
+        const sx = (Math.random() - 0.5) * screenShake;
+        const sy = (Math.random() - 0.5) * screenShake;
+        ctx.translate(sx, sy);
+        screenShake *= Math.pow(0.04, dt);
+        if (screenShake < 0.3) screenShake = 0;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(bgCanvas, 0, 0);
+
+      drawCaustics(timeSec);
+      drawRiverPlants(timeSec);
+
+      if (catfish.state === "shadow_prowl") {
+        drawCatfish(timeSec);
+      }
+
+      const sortedFishes = Object.entries(jogadoresAtivos)
+        .filter(([id]) => visualFishes[id])
+        .sort(([idA], [idB]) => visualFishes[idA].z - visualFishes[idB].z);
+
+      for (const [id, data] of sortedFishes) {
+        drawSingleKoi(id, data, visualFishes[id]);
+      }
+
+      if (catfish.state === "strike") {
+        drawCatfish(timeSec);
+      }
+
+      drawFoodPellets(timeSec);
+      drawRipplesAndParticles(dt);
+      drawLilyPads(timeSec);
+
+      ctx.restore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    initMultiplayer();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>

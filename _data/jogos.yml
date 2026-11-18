@@ -1,0 +1,13 @@
+# Jogos interativos — aparecem na página da escola, abaixo de "Plantão de dúvidas" e "Links úteis".
+# Ficam fora de escola.yml para não se perderem quando você trocar de colégio.
+#
+# Para adicionar um jogo:
+#   1. Coloque o HTML do jogo em escola/jogos/<nome-do-jogo>/index.html
+#   2. Coloque o GIF em assets/jogos/<nome-do-jogo>.gif
+#   3. Acrescente um item abaixo
+# Enquanto "gif" estiver vazio (ou o arquivo não existir), aparece um quadro provisório no lugar.
+
+- titulo: "Lago Koi"
+  descricao: "Lago multiplayer: cada aluno controla uma carpa, alimenta o peixe e foge do bagre gigante."
+  url: /escola/jogos/lago-koi/
+  gif: /assets/jogos/lago-koi.gif
