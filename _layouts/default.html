@@ -1,3 +1,10 @@
+{%- comment -%}
+  Área da escola = página /escola/, tudo abaixo de /escola/ e os avisos (artigos com programas: [escola]).
+  Nessa área não aparecem links de contato nem de agendamento de aulas particulares.
+{%- endcomment -%}
+{%- assign area_escola = false -%}
+{%- assign inicio_url = page.url | slice: 0, 8 -%}
+{%- if page.escola or inicio_url == "/escola/" or page.programas contains "escola" -%}{%- assign area_escola = true -%}{%- endif -%}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,8 +14,10 @@
   <link rel="preload" href="{{ '/assets/fonts/bricolage.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% include paleta-escola.html %}
+  {% unless area_escola %}
   <link rel="preconnect" href="https://calendly.com">
   <link rel="preconnect" href="https://assets.calendly.com" crossorigin>
+  {% endunless %}
 </head>
 <body>
 
@@ -31,8 +40,10 @@
 
       <nav class="util-nav" aria-label="Site">
         <a href="{{ '/aulas/' | relative_url }}"{% if page.url == '/aulas/' %} aria-current="page"{% endif %}>Como funcionam as aulas</a>
+        {% unless area_escola %}
         <a href="{{ '/contato/' | relative_url }}"{% if page.url == '/contato/' %} aria-current="page"{% endif %}>Contato</a>
         {% include agendar.html classe="btn btn-small" %}
+        {% endunless %}
       </nav>
     </div>
   </header>
@@ -47,11 +58,12 @@
         <p class="footer-name">Bernardo Riper</p>
         <p class="muted">Aulas de IB, IGCSE, SAT e ENEM.</p>
       </div>
-      {% include contato-links.html %}
+      {% unless area_escola %}{% include contato-links.html %}{% endunless %}
       <p class="muted">&copy; {{ 'now' | date: "%Y" }}</p>
     </div>
   </footer>
 
+  {% unless area_escola %}
   <dialog class="cal-dialog" id="cal-dialog" aria-label="Agendar aula">
     <button class="cal-close" type="button" aria-label="Fechar calendário">&times;</button>
     <div class="cal-sheet">
@@ -104,6 +116,7 @@
       dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
     })();
   </script>
+  {% endunless %}
 
 </body>
 </html>
