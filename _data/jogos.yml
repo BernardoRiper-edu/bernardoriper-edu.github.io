@@ -11,3 +11,8 @@
   descricao: "Lago multiplayer: cada aluno controla uma carpa, alimenta o peixe e foge do bagre gigante."
   url: /escola/jogos/lago-koi/
   gif: /assets/jogos/lago-koi.gif
+
+- titulo: "Koi Algebra"
+  descricao: "Simplifique expressões juntando termos semelhantes para alimentar sua carpa. Errou? A isca pesada atrai o bagre gigante."
+  url: /escola/jogos/koi-algebra/
+  gif: /assets/jogos/koi-algebra.gif

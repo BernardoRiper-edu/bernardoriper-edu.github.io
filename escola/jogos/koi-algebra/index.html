@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Koi Algebra Pond - Collecting Like Terms</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #041c2c;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Top HUD */
+    #hud {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .hud-card {
+      background: rgba(6, 36, 56, 0.72);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(125, 211, 252, 0.25);
+      color: #e0f2fe;
+      padding: 10px 16px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .hud-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-sub {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .badge-demo {
+      background: #f59e0b;
+      color: #1e1b4b;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+      display: none;
+    }
+
+    #audio-btn {
+      pointer-events: auto;
+      cursor: pointer;
+      background: rgba(6, 36, 56, 0.8);
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    #audio-btn:hover {
+      background: rgba(14, 65, 99, 0.9);
+      transform: scale(1.04);
+    }
+
+    /* Circular Feed Button (Bottom Right) */
+    #feed-btn {
+      position: fixed;
+      bottom: 26px;
+      right: 26px;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      border: 3px solid #fef08a;
+      background: radial-gradient(circle at 30% 30%, #f59e0b, #b45309);
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(245, 158, 11, 0.45), inset 0 2px 6px rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 15;
+    }
+
+    #feed-btn:hover {
+      transform: scale(1.08);
+    }
+
+    #feed-btn:active {
+      transform: scale(0.94);
+    }
+
+    /* Algebra Challenge Modal */
+    #math-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 12, 20, 0.65);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+
+    .math-box {
+      background: linear-gradient(145deg, #0c2d48, #071d30);
+      border: 2px solid #38bdf8;
+      border-radius: 20px;
+      padding: 24px 28px;
+      width: 92%;
+      max-width: 400px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+      animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .math-header {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #7dd3fc;
+      margin-bottom: 6px;
+    }
+
+    #math-question {
+      font-size: 1.95rem;
+      font-weight: 800;
+      margin: 12px 0 18px;
+      color: #fef08a;
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .math-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .math-opt-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 14px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+    }
+
+    .math-opt-btn:hover {
+      background: #0284c7;
+      transform: translateY(-2px);
+    }
+
+    .math-hint {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 14px;
+      line-height: 1.35;
+    }
+
+    /* Giant Catfish Warning Banner */
+    #catfish-alert {
+      position: fixed;
+      top: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(153, 27, 27, 0.88);
+      border: 1px solid #f87171;
+      color: #fef2f2;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: none;
+      z-index: 20;
+      box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-card">
+      <div class="hud-title">
+        <span>🐟 Koi Algebra Pond</span>
+        <span id="demo-badge" class="badge-demo">LOCAL MODE (NO FIREBASE)</span>
+      </div>
+      <div class="hud-sub" id="players-count">Connected players: 0 / 20</div>
+      <div class="hud-sub" id="player-stats">Your Koi: -- | Weight: 1.0 kg | Solved: 0</div>
+    </div>
+    <button id="audio-btn" title="Toggle Zen Music">🔇 Sound: OFF</button>
+  </div>
+
+  <div id="catfish-alert">⚠️ A GIANT SHADOW IS MOVING IN THE DEEP...</div>
+
+  <!-- Circular Feed Button -->
+  <button id="feed-btn" title="Simplify Expression & Drop Fish Food">🌾</button>
+
+  <!-- Algebra Modal -->
+  <div id="math-modal">
+    <div class="math-box">
+      <div class="math-header">Simplify by Collecting Like Terms</div>
+      <div id="math-question">3x + 5x</div>
+      <div class="math-options" id="math-options"></div>
+      <div class="math-hint">Correct answer drops Golden Pellets! Wrong answer drops Heavy Bait that attracts the Giant Catfish!</div>
+    </div>
+  </div>
+
+  <!-- Main Canvas -->
+  <canvas id="pondCanvas"></canvas>
+
+  <!-- Main Script with Firebase v10 Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      update,
+      remove,
+      onValue,
+      onDisconnect,
+      push
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // =========================================================================
+    // 1. FIREBASE CONFIGURATION (REPLACE WITH YOUR OWN CREDENTIALS)
+    // =========================================================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // List of images inside your /images folder
+    const AVATAR_IMAGES = [
+      "images/student1.png",
+      "images/student2.png",
+      "images/student3.png",
+      "images/student4.png",
+      "images/student5.png"
+    ];
+
+    const FISH_NAMES = [
+      "Al-Khwarizmi", "Euler", "Gauss", "Hypatia", "Newton",
+      "Archimedes", "Fibonacci", "Ada", "Turing", "Noether",
+      "Pythagoras", "Descartes", "Pascal", "Riemann", "Mirzakhani",
+      "Leibniz", "Galileo", "Kepler", "Boole", "Cantor"
+    ];
+
+    const KOI_PALETTES = [
+      { body: "#ff5722", spots: "#ffffff", fins: "#ffccbc" }, // Kohaku (Orange & White)
+      { body: "#ffffff", spots: "#e53935", fins: "#212121" }, // Sanke (White, Red, Black)
+      { body: "#ffd54f", spots: "#ff8f00", fins: "#fff8e1" }, // Yamabuki (Gold)
+      { body: "#263238", spots: "#ff7043", fins: "#cfd8dc" }, // Utsuri (Black & Orange)
+      { body: "#4fc3f7", spots: "#ffffff", fins: "#e1f5fe" }, // Asagi (Sky Blue)
+      { body: "#f48fb1", spots: "#ffffff", fins: "#fce4ec" }  // Sakura (Pink)
+    ];
+
+    // =========================================================================
+    // 2. PROCEDURAL AUDIO ENGINE (WEB AUDIO API)
+    // =========================================================================
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = false;
+        this.musicInterval = null;
+        // Relaxing C Major Pentatonic Scale (Hz)
+        this.scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+      }
+
+      toggle() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+        this.enabled = !this.enabled;
+        const btn = document.getElementById("audio-btn");
+        btn.textContent = this.enabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+
+        if (this.enabled) {
+          this.startZenMusic();
+        } else {
+          clearInterval(this.musicInterval);
+        }
+      }
+
+      startZenMusic() {
+        clearInterval(this.musicInterval);
+        this.musicInterval = setInterval(() => {
+          if (!this.enabled || !this.ctx) return;
+          const freq = this.scale[Math.floor(Math.random() * this.scale.length)];
+          this.playBell(freq, 2.8, 0.045);
+        }, 1600);
+      }
+
+      playBell(freq, duration = 1.5, volume = 0.08) {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+        gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(volume, this.ctx.currentTime + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
+      }
+
+      playSplash() {
+        if (!this.enabled || !this.ctx) return;
+        this.playBell(520, 0.35, 0.07);
+        setTimeout(() => this.playBell(780, 0.4, 0.05), 90);
+      }
+
+      playEat(isGood) {
+        if (!this.enabled || !this.ctx) return;
+        if (isGood) {
+          this.playBell(659.25, 0.4, 0.09);
+          setTimeout(() => this.playBell(880, 0.5, 0.09), 80);
+        } else {
+          this.playBell(140, 0.6, 0.12);
+        }
+      }
+
+      playCatfishRumble() {
+        if (!this.enabled || !this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(55, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(38, this.ctx.currentTime + 2.2);
+
+        gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 2.4);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 2.4);
+      }
+    }
+
+    const sound = new SoundEngine();
+    document.getElementById("audio-btn").addEventListener("click", () => sound.toggle());
+
+    // =========================================================================
+    // 3. CANVAS SETUP & POND ENVIRONMENT
+    // =========================================================================
+    const canvas = document.getElementById("pondCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    // Preload avatar images from /images folder (with fallback if missing)
+    const loadedAvatars = {};
+    AVATAR_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.onload = () => { loadedAvatars[src] = img; };
+      img.onerror = () => { loadedAvatars[src] = null; };
+    });
+
+    // Riverbed stones for depth perception
+    const pebbles = Array.from({ length: 28 }, () => ({
+      x: Math.random() * 1920,
+      y: Math.random() * 1080,
+      rx: 12 + Math.random() * 28,
+      ry: 8 + Math.random() * 18,
+      rot: Math.random() * Math.PI,
+      color: `rgba(${10 + Math.random() * 20}, ${35 + Math.random() * 25}, ${50 + Math.random() * 25}, 0.55)`
+    }));
+
+    // Floating lily pads
+    const lilyPads = Array.from({ length: 6 }, () => ({
+      x: 100 + Math.random() * (width - 200),
+      y: 100 + Math.random() * (height - 200),
+      r: 32 + Math.random() * 24,
+      angle: Math.random() * Math.PI * 2,
+      hasFlower: Math.random() > 0.45
+    }));
+
+    const ripples = [];
+    const floatingTexts = [];
+
+    function spawnRipple(x, y, maxR = 55, color = "rgba(186, 230, 253, 0.45)") {
+      ripples.push({ x, y, r: 4, maxR, alpha: 0.85, color });
+    }
+
+    function spawnFloatingText(x, y, text, color = "#fef08a") {
+      floatingTexts.push({ x, y, text, color, alpha: 1, vy: -0.9 });
+    }
+
+    // =========================================================================
+    // 4. LOCAL PLAYER STATE & FIREBASE REALTIME SYNC
+    // =========================================================================
+    const MAX_PLAYERS = 20;
+    const localId = "koi_" + Math.random().toString(36).substring(2, 10);
+    const paletteIndex = Math.floor(Math.random() * KOI_PALETTES.length);
+    const chosenName = FISH_NAMES[Math.floor(Math.random() * FISH_NAMES.length)] + " #" + Math.floor(10 + Math.random() * 89);
+    const chosenAvatar = AVATAR_IMAGES[Math.floor(Math.random() * AVATAR_IMAGES.length)];
+
+    let allPlayers = {};
+    let foods = [];
+
+    const myFish = {
+      id: localId,
+      name: chosenName,
+      avatar: chosenAvatar,
+      paletteIndex: paletteIndex,
+      color: KOI_PALETTES[paletteIndex].body,
+      x: width * (0.25 + Math.random() * 0.5),
+      y: height * (0.25 + Math.random() * 0.5),
+      z: 0.5, // Depth: 0.0 (deep bottom) to 1.0 (water surface)
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      vz: 0,
+      angle: Math.random() * Math.PI * 2,
+      weight: 1.0,
+      score: 0,
+      tailPhase: Math.random() * 10,
+      idleTimer: 0,
+      isResting: false,
+      lastSync: 0
+    };
+
+    let db = null;
+    let isFirebaseReady = false;
+
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      try {
+        const app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        isFirebaseReady = true;
+      } catch (err) {
+        console.warn("Firebase init error, falling back to local mode:", err);
+      }
+    }
+
+    if (!isFirebaseReady) {
+      document.getElementById("demo-badge").style.display = "inline-block";
+    }
+
+    // Register local player at 'sala_unica/ID_DO_JOGADOR'
+    function initPlayerSync() {
+      const initialData = {
+        id: myFish.id,
+        name: myFish.name,
+        avatar: myFish.avatar,
+        color: myFish.color,
+        paletteIndex: myFish.paletteIndex,
+        x: Math.round(myFish.x),
+        y: Math.round(myFish.y),
+        z: Number(myFish.z.toFixed(2)),
+        angle: Number(myFish.angle.toFixed(2)),
+        weight: Number(myFish.weight.toFixed(2)),
+        score: myFish.score
+      };
+
+      allPlayers[localId] = initialData;
+
+      if (isFirebaseReady) {
+        const playerRef = ref(db, `sala_unica/${localId}`);
+        const roomRef = ref(db, "sala_unica");
+        const foodRef = ref(db, "sala_comidas");
+
+        // Automatically remove player when closing tab or disconnecting
+        onDisconnect(playerRef).remove();
+
+        // Listen to entire 'sala_unica' node
+        onValue(roomRef, (snapshot) => {
+          const data = snapshot.val() || {};
+          const keys = Object.keys(data);
+
+          if (!data[localId] && keys.length >= MAX_PLAYERS) {
+            alert("The global pond is full (20/20 students). Please try again shortly!");
+            return;
+          }
+
+          allPlayers = data;
+          updateHUD();
+        });
+
+        // Listen to shared fish food
+        onValue(foodRef, (snapshot) => {
+          const data = snapshot.val() || {};
+          foods = Object.entries(data).map(([key, val]) => ({ id: key, ...val }));
+        });
+
+        // Save initial position
+        set(playerRef, initialData);
+      } else {
+        updateHUD();
+      }
+    }
+
+    function syncMovementToFirebase(force = false) {
+      const now = performance.now();
+      const payload = {
+        id: myFish.id,
+        name: myFish.name,
+        avatar: myFish.avatar,
+        color: myFish.color,
+        paletteIndex: myFish.paletteIndex,
+        x: Math.round(myFish.x),
+        y: Math.round(myFish.y),
+        z: Number(myFish.z.toFixed(2)),
+        angle: Number(myFish.angle.toFixed(2)),
+        weight: Number(myFish.weight.toFixed(2)),
+        score: myFish.score
+      };
+
+      allPlayers[localId] = payload;
+
+      if (isFirebaseReady && (force || now - myFish.lastSync > 65)) {
+        myFish.lastSync = now;
+        const playerRef = ref(db, `sala_unica/${localId}`);
+        update(playerRef, payload);
+      }
+    }
+
+    function updateHUD() {
+      const count = Object.keys(allPlayers).length;
+      document.getElementById("players-count").textContent = `Connected players: ${count} / ${MAX_PLAYERS}`;
+      document.getElementById("player-stats").textContent =
+        `Your Koi: ${myFish.name} | Weight: ${myFish.weight.toFixed(1)} kg | Solved: ${myFish.score}`;
+    }
+
+    // =========================================================================
+    // 5. ALGEBRA PEDAGOGICAL MECHANIC: COLLECTING LIKE TERMS
+    // =========================================================================
+    const feedBtn = document.getElementById("feed-btn");
+    const mathModal = document.getElementById("math-modal");
+    const mathQuestionEl = document.getElementById("math-question");
+    const mathOptionsEl = document.getElementById("math-options");
+
+    let currentCorrectAnswer = "";
+
+    // Helper to format algebraic terms cleanly (e.g., 1x -> x, -1x -> -x)
+    function formatTerm(coeff, variable, isFirst = false) {
+      if (coeff === 0) return "";
+      const sign = coeff < 0 ? (isFirst ? "-" : " - ") : (isFirst ? "" : " + ");
+      const absVal = Math.abs(coeff);
+      if (variable === "") {
+        return `${sign}${absVal}`;
+      }
+      const numStr = absVal === 1 ? "" : absVal;
+      return `${sign}${numStr}${variable}`;
+    }
+
+    function formatExpression(terms) {
+      let result = "";
+      terms.forEach((t) => {
+        if (t.c !== 0) {
+          result += formatTerm(t.c, t.v, result === "");
+        }
+      });
+      return result || "0";
+    }
+
+    function generateAlgebraChallenge() {
+      const level = Math.min(3, 1 + Math.floor(myFish.score / 3));
+      const vars = ["x", "y", "a", "b", "m", "n"];
+      const v1 = vars[Math.floor(Math.random() * vars.length)];
+      let v2 = vars[Math.floor(Math.random() * vars.length)];
+      while (v2 === v1) v2 = vars[Math.floor(Math.random() * vars.length)];
+
+      let questionStr = "";
+      let correctStr = "";
+      const distractors = new Set();
+
+      if (level === 1) {
+        // Level 1: Single variable combining (e.g., 4x + 3x or 7a - 2a)
+        const c1 = Math.floor(Math.random() * 8) + 2;
+        let c2 = Math.floor(Math.random() * 7) + 1;
+        const isSub = Math.random() > 0.45 && c1 > c2;
+        if (isSub) c2 = -c2;
+
+        questionStr = formatExpression([{ c: c1, v: v1 }, { c: c2, v: v1 }]);
+        const sum = c1 + c2;
+        correctStr = formatExpression([{ c: sum, v: v1 }]);
+
+        // Common student misconceptions
+        distractors.add(formatExpression([{ c: c1 - c2, v: v1 }])); // Wrong operation
+        distractors.add(`${sum}${v1}²`); // Exponent error (x + x = x^2)
+        distractors.add(formatExpression([{ c: sum + 1, v: v1 }]));
+        distractors.add(formatExpression([{ c: Math.max(1, sum - 1), v: v1 }]));
+      } else if (level === 2) {
+        // Level 2: Two unlike terms mixed (e.g., 5x + 3y + 2x -> 7x + 3y)
+        const a1 = Math.floor(Math.random() * 6) + 2;
+        const b1 = Math.floor(Math.random() * 6) + 2;
+        let a2 = Math.floor(Math.random() * 5) + 1;
+        if (Math.random() > 0.55 && a1 > a2) a2 = -a2;
+
+        questionStr = formatExpression([
+          { c: a1, v: v1 },
+          { c: b1, v: v2 },
+          { c: a2, v: v1 }
+        ]);
+
+        const totalA = a1 + a2;
+        correctStr = formatExpression([
+          { c: totalA, v: v1 },
+          { c: b1, v: v2 }
+        ]);
+
+        // Misconception: combining all coefficients into xy
+        distractors.add(`${totalA + b1}${v1}${v2}`);
+        distractors.add(formatExpression([{ c: a1, v: v1 }, { c: b1 + a2, v: v2 }]));
+        distractors.add(formatExpression([{ c: a1 - a2, v: v1 }, { c: b1, v: v2 }]));
+        distractors.add(formatExpression([{ c: totalA + 2, v: v1 }, { c: b1, v: v2 }]));
+      } else {
+        // Level 3: Four terms with two variables & negative signs (e.g., 6x - 2y + 3x + 5y)
+        const a1 = Math.floor(Math.random() * 6) + 3;
+        const b1 = (Math.floor(Math.random() * 4) + 1) * (Math.random() > 0.5 ? 1 : -1);
+        const a2 = (Math.floor(Math.random() * 4) + 1) * (Math.random() > 0.35 ? 1 : -1);
+        const b2 = Math.floor(Math.random() * 5) + 3;
+
+        questionStr = formatExpression([
+          { c: a1, v: v1 },
+          { c: b1, v: v2 },
+          { c: a2, v: v1 },
+          { c: b2, v: v2 }
+        ]);
+
+        const totalA = a1 + a2;
+        const totalB = b1 + b2;
+        correctStr = formatExpression([
+          { c: totalA, v: v1 },
+          { c: totalB, v: v2 }
+        ]);
+
+        // Misconception: ignoring negative sign on b1
+        distractors.add(formatExpression([
+          { c: totalA, v: v1 },
+          { c: Math.abs(b1) + b2, v: v2 }
+        ]));
+        // Misconception: subtracting a2 instead of adding
+        distractors.add(formatExpression([
+          { c: a1 - a2, v: v1 },
+          { c: totalB, v: v2 }
+        ]));
+        // Misconception: combining everything into one term
+        distractors.add(`${totalA + totalB}${v1}${v2}`);
+        distractors.add(formatExpression([
+          { c: totalA + 1, v: v1 },
+          { c: totalB - 1, v: v2 }
+        ]));
+      }
+
+      mathQuestionEl.textContent = questionStr;
+
+      // Ensure 3 distinct wrong options
+      const finalOptions = [correctStr];
+      for (const d of distractors) {
+        if (d && d !== correctStr && !finalOptions.includes(d)) {
+          finalOptions.push(d);
+        }
+        if (finalOptions.length === 4) break;
+      }
+
+      while (finalOptions.length < 4) {
+        finalOptions.push(`${Math.floor(Math.random() * 12) + 2}${v1}`);
+      }
+
+      return {
+        correct: correctStr,
+        options: finalOptions.sort(() => Math.random() - 0.5)
+      };
+    }
+
+    function openMathModal() {
+      if (!sound.ctx) sound.toggle();
+      const challenge = generateAlgebraChallenge();
+      currentCorrectAnswer = challenge.correct;
+
+      mathOptionsEl.innerHTML = "";
+      challenge.options.forEach((opt) => {
+        const btn = document.createElement("button");
+        btn.className = "math-opt-btn";
+        btn.textContent = opt;
+        btn.onclick = () => handleMathAnswer(opt === currentCorrectAnswer);
+        mathOptionsEl.appendChild(btn);
+      });
+
+      mathModal.style.display = "flex";
+    }
+
+    function handleMathAnswer(isCorrect) {
+      mathModal.style.display = "none";
+
+      const dropX = Math.max(60, Math.min(width - 60, myFish.x + (Math.random() - 0.5) * 140));
+      const dropY = Math.max(60, Math.min(height - 60, myFish.y + (Math.random() - 0.5) * 140));
+
+      spawnRipple(dropX, dropY, 70, isCorrect ? "rgba(250, 204, 21, 0.7)" : "rgba(248, 113, 113, 0.7)");
+      sound.playSplash();
+
+      const foodItem = {
+        x: Math.round(dropX),
+        y: Math.round(dropY),
+        isNutritious: isCorrect, // True = Golden Pellets, False = Heavy Bait (attracts Giant Catfish!)
+        owner: localId,
+        createdAt: Date.now()
+      };
+
+      if (isFirebaseReady) {
+        const newFoodRef = push(ref(db, "sala_comidas"));
+        set(newFoodRef, foodItem);
+      } else {
+        foods.push({ id: "local_" + Date.now(), ...foodItem });
+      }
+
+      if (isCorrect) {
+        myFish.score += 1;
+        spawnFloatingText(myFish.x, myFish.y - 30, "Correct! Golden Pellets!", "#4ade80");
+      } else {
+        spawnFloatingText(myFish.x, myFish.y - 30, `Wrong! (${currentCorrectAnswer})`, "#f87171");
+      }
+      updateHUD();
+    }
+
+    feedBtn.addEventListener("click", openMathModal);
+    mathModal.addEventListener("click", (e) => {
+      if (e.target === mathModal) mathModal.style.display = "none";
+    });
+
+    // Clicking on the pond creates a ripple and nudges the local fish
+    canvas.addEventListener("pointerdown", (e) => {
+      spawnRipple(e.clientX, e.clientY, 45);
+      const dx = e.clientX - myFish.x;
+      const dy = e.clientY - myFish.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      myFish.vx = (dx / dist) * 2.8;
+      myFish.vy = (dy / dist) * 2.8;
+      myFish.vz = (0.85 - myFish.z) * 0.05;
+      myFish.isResting = false;
+    });
+
+    // =========================================================================
+    // 6. THE GIANT CATFISH (DEEP SHADOW SUSPENSE & PREDATOR OF HEAVY KOI)
+    // =========================================================================
+    const catfish = {
+      state: "HIDDEN", // HIDDEN | SHADOW | ATTACK
+      x: -300,
+      y: height * 0.5,
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      timer: 8,
+      tailPhase: 0
+    };
+
+    const alertBanner = document.getElementById("catfish-alert");
+
+    function updateCatfish(dt) {
+      catfish.tailPhase += dt * 5;
+      catfish.timer -= dt;
+
+      if (catfish.state === "HIDDEN" && catfish.timer <= 0) {
+        catfish.state = "SHADOW";
+        const fromLeft = Math.random() > 0.5;
+        catfish.x = fromLeft ? -260 : width + 260;
+        catfish.y = height * (0.2 + Math.random() * 0.6);
+        catfish.vx = fromLeft ? 115 : -115;
+        catfish.vy = (Math.random() - 0.5) * 30;
+        catfish.angle = Math.atan2(catfish.vy, catfish.vx);
+
+        alertBanner.style.display = "block";
+        sound.playCatfishRumble();
+      } else if (catfish.state === "SHADOW") {
+        catfish.x += catfish.vx * dt;
+        catfish.y += catfish.vy * dt;
+
+        if ((catfish.vx > 0 && catfish.x > width + 300) || (catfish.vx < 0 && catfish.x < -300)) {
+          alertBanner.style.display = "none";
+
+          // Hunts the heaviest fish (>= 2.2 kg)
+          const heavyPlayers = Object.values(allPlayers).filter((p) => (p.weight || 1) >= 2.2);
+          if (heavyPlayers.length > 0 && Math.random() < 0.7) {
+            heavyPlayers.sort((a, b) => b.weight - a.weight);
+            const target = heavyPlayers[0];
+            catfish.state = "ATTACK";
+            catfish.targetId = target.id;
+            catfish.x = target.x < width / 2 ? -250 : width + 250;
+            catfish.y = target.y;
+          } else {
+            catfish.state = "HIDDEN";
+            catfish.timer = 14 + Math.random() * 10;
+          }
+        }
+      } else if (catfish.state === "ATTACK") {
+        const target = allPlayers[catfish.targetId];
+        if (!target) {
+          catfish.state = "HIDDEN";
+          catfish.timer = 15;
+          return;
+        }
+
+        const dx = target.x - catfish.x;
+        const dy = target.y - catfish.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const speed = 560; // Lightning fast!
+
+        catfish.vx = (dx / dist) * speed;
+        catfish.vy = (dy / dist) * speed;
+        catfish.angle = Math.atan2(catfish.vy, catfish.vx);
+        catfish.x += catfish.vx * dt;
+        catfish.y += catfish.vy * dt;
+
+        if (dist < 42) {
+          spawnRipple(target.x, target.y, 120, "rgba(239, 68, 68, 0.85)");
+          sound.playCatfishRumble();
+
+          if (target.id === localId) {
+            myFish.weight = 1.0;
+            myFish.x = Math.random() * width;
+            myFish.y = Math.random() * height;
+            myFish.z = 0.2;
+            spawnFloatingText(target.x, target.y - 20, "THE GIANT CATFISH ATE YOUR HEAVY KOI!", "#ef4444");
+            syncMovementToFirebase(true);
+            updateHUD();
+          }
+
+          catfish.state = "HIDDEN";
+          catfish.timer = 18 + Math.random() * 10;
+        }
+      }
+    }
+
+    // =========================================================================
+    // 7. PROCEDURAL SWIMMING, 3D DEPTH & FISH-TO-FISH COLLISIONS
+    // =========================================================================
+    function updateLocalFish(dt) {
+      myFish.tailPhase += dt * (myFish.isResting ? 3 : 9);
+
+      // 1. Seek nearby food
+      let nearestFood = null;
+      let minFoodDist = 340;
+      for (const f of foods) {
+        const d = Math.hypot(f.x - myFish.x, f.y - myFish.y);
+        if (d < minFoodDist) {
+          minFoodDist = d;
+          nearestFood = f;
+        }
+      }
+
+      if (nearestFood) {
+        myFish.isResting = false;
+        const dx = nearestFood.x - myFish.x;
+        const dy = nearestFood.y - myFish.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        myFish.vx += (dx / dist) * 0.16;
+        myFish.vy += (dy / dist) * 0.16;
+        myFish.vz += (0.95 - myFish.z) * 0.04;
+
+        if (dist < 24) {
+          const isGood = nearestFood.isNutritious !== false;
+          myFish.weight = Math.min(5.0, myFish.weight + (isGood ? 0.25 : 0.75));
+          sound.playEat(isGood);
+          spawnRipple(nearestFood.x, nearestFood.y, 45, isGood ? "#fde047" : "#f87171");
+          spawnFloatingText(
+            myFish.x,
+            myFish.y - 24,
+            isGood ? `+0.25 kg` : `+0.75 kg (HEAVY!)`,
+            isGood ? "#fef08a" : "#fca5a5"
+          );
+
+          foods = foods.filter((item) => item.id !== nearestFood.id);
+          if (isFirebaseReady && nearestFood.id) {
+            remove(ref(db, `sala_comidas/${nearestFood.id}`));
+          }
+          updateHUD();
+        }
+      } else {
+        // 2. Idle procedural swimming (roaming, pausing, or nibbling at the surface)
+        myFish.idleTimer -= dt;
+        if (myFish.idleTimer <= 0) {
+          const action = Math.random();
+          if (action < 0.22) {
+            myFish.isResting = true;
+            myFish.idleTimer = 1.5 + Math.random() * 2;
+          } else if (action < 0.48) {
+            myFish.isResting = false;
+            myFish.vz = 0.25;
+            myFish.idleTimer = 2.5 + Math.random() * 2;
+            if (myFish.z > 0.85) {
+              spawnRipple(myFish.x + Math.cos(myFish.angle) * 20, myFish.y + Math.sin(myFish.angle) * 20, 28);
+            }
+          } else {
+            myFish.isResting = false;
+            const turn = (Math.random() - 0.5) * 1.8;
+            myFish.angle += turn;
+            const speed = 1.1 + Math.random() * 1.1;
+            myFish.vx = Math.cos(myFish.angle) * speed;
+            myFish.vy = Math.sin(myFish.angle) * speed;
+            myFish.vz = (Math.random() - 0.5) * 0.22;
+            myFish.idleTimer = 2.0 + Math.random() * 3;
+          }
+        }
+      }
+
+      // 3. 3D Physical Collision (prevents fish from passing through each other)
+      const myRadius = 18 + myFish.weight * 4;
+      for (const otherId in allPlayers) {
+        if (otherId === localId) continue;
+        const other = allPlayers[otherId];
+        const otherZ = other.z ?? 0.5;
+        if (Math.abs(myFish.z - otherZ) < 0.28) {
+          const dx = myFish.x - other.x;
+          const dy = myFish.y - other.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const otherRadius = 18 + (other.weight || 1) * 4;
+          const minDist = myRadius + otherRadius;
+
+          if (dist < minDist) {
+            const overlap = (minDist - dist) * 0.5;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            myFish.x += nx * overlap;
+            myFish.y += ny * overlap;
+            myFish.vx += nx * 0.45;
+            myFish.vy += ny * 0.45;
+          }
+        }
+      }
+
+      const drag = myFish.isResting ? 0.92 : 0.985;
+      myFish.vx *= drag;
+      myFish.vy *= drag;
+      myFish.vz *= 0.95;
+
+      const maxSpeed = 3.2;
+      const currentSpeed = Math.hypot(myFish.vx, myFish.vy);
+      if (currentSpeed > maxSpeed) {
+        myFish.vx = (myFish.vx / currentSpeed) * maxSpeed;
+        myFish.vy = (myFish.vy / currentSpeed) * maxSpeed;
+      }
+
+      myFish.x += myFish.vx;
+      myFish.y += myFish.vy;
+      myFish.z = Math.max(0.05, Math.min(1.0, myFish.z + myFish.vz * dt));
+
+      const margin = 45;
+      if (myFish.x < margin) { myFish.x = margin; myFish.vx = Math.abs(myFish.vx); }
+      if (myFish.x > width - margin) { myFish.x = width - margin; myFish.vx = -Math.abs(myFish.vx); }
+      if (myFish.y < margin) { myFish.y = margin; myFish.vy = Math.abs(myFish.vy); }
+      if (myFish.y > height - margin) { myFish.y = height - margin; myFish.vy = -Math.abs(myFish.vy); }
+
+      if (currentSpeed > 0.15) {
+        myFish.angle = Math.atan2(myFish.vy, myFish.vx);
+      }
+
+      syncMovementToFirebase(false);
+    }
+
+    // =========================================================================
+    // 8. RENDERING POND, PROCEDURAL KOI & GIANT CATFISH
+    // =========================================================================
+    function drawPondBackground() {
+      const grad = ctx.createRadialGradient(
+        width * 0.5, height * 0.5, 40,
+        width * 0.5, height * 0.5, Math.max(width, height) * 0.75
+      );
+      grad.addColorStop(0, "#0b4f6c");
+      grad.addColorStop(0.55, "#063247");
+      grad.addColorStop(1, "#021622");
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      for (const p of pebbles) {
+        ctx.save();
+        ctx.translate(p.x % width, p.y % height);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.rx, p.ry, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawCatfish() {
+      if (catfish.state === "HIDDEN") return;
+
+      ctx.save();
+      ctx.translate(catfish.x, catfish.y);
+      ctx.rotate(catfish.angle);
+
+      const isShadow = catfish.state === "SHADOW";
+      const scale = isShadow ? 1.45 : 1.75;
+      ctx.scale(scale, scale);
+
+      ctx.fillStyle = isShadow ? "rgba(1, 8, 14, 0.58)" : "#1e293b";
+      ctx.shadowColor = "rgba(0,0,0,0.85)";
+      ctx.shadowBlur = isShadow ? 22 : 12;
+
+      const wag = Math.sin(catfish.tailPhase) * 18;
+
+      ctx.beginPath();
+      ctx.moveTo(75, 0);
+      ctx.quadraticCurveTo(45, -34, -10, -26);
+      ctx.quadraticCurveTo(-75, -16, -135, wag);
+      ctx.quadraticCurveTo(-75, 16, -10, 26);
+      ctx.quadraticCurveTo(45, 34, 75, 0);
+      ctx.fill();
+
+      // Whiskers (Barbels)
+      ctx.strokeStyle = isShadow ? "rgba(1, 8, 14, 0.55)" : "#475569";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(68, -14);
+      ctx.quadraticCurveTo(95, -42, 110, -35 + wag * 0.3);
+      ctx.moveTo(68, 14);
+      ctx.quadraticCurveTo(95, 42, 110, 35 + wag * 0.3);
+      ctx.stroke();
+
+      if (!isShadow) {
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.arc(52, -14, 4, 0, Math.PI * 2);
+        ctx.arc(52, 14, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawKoiFish(player, time) {
+      const z = player.z ?? 0.5;
+      const weight = player.weight || 1.0;
+      const depthScale = 0.62 + z * 0.48;
+      const sizeScale = depthScale * (0.85 + weight * 0.22);
+      const palette = KOI_PALETTES[player.paletteIndex ?? 0] || KOI_PALETTES[0];
+
+      const phase = time * 0.007 + (player.id.charCodeAt(4) || 0);
+      const tailWag = Math.sin(phase) * 11;
+      const bodyWave = Math.sin(phase - 0.8) * 4;
+
+      // Cast shadow on pond floor
+      ctx.save();
+      ctx.translate(player.x + (1 - z) * 18 + 12, player.y + (1 - z) * 22 + 16);
+      ctx.rotate(player.angle || 0);
+      ctx.scale(sizeScale * 0.92, sizeScale * 0.92);
+      ctx.fillStyle = `rgba(1, 10, 18, ${0.18 + z * 0.22})`;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 32, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Koi Body
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.angle || 0);
+      ctx.scale(sizeScale, sizeScale);
+
+      ctx.globalAlpha = 0.55 + z * 0.45;
+
+      // Pectoral fins
+      ctx.fillStyle = palette.fins;
+      ctx.beginPath();
+      ctx.ellipse(6, -13 + bodyWave * 0.3, 10, 5, -0.5, 0, Math.PI * 2);
+      ctx.ellipse(6, 13 + bodyWave * 0.3, 10, 5, 0.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Flowing tail
+      ctx.fillStyle = palette.fins;
+      ctx.beginPath();
+      ctx.moveTo(-24, bodyWave);
+      ctx.quadraticCurveTo(-38, -14 + tailWag, -48, -10 + tailWag * 1.3);
+      ctx.quadraticCurveTo(-40, tailWag, -48, 10 + tailWag * 1.3);
+      ctx.quadraticCurveTo(-38, 14 + tailWag, -24, bodyWave);
+      ctx.fill();
+
+      // Main body
+      ctx.fillStyle = palette.body;
+      ctx.beginPath();
+      ctx.moveTo(30, 0);
+      ctx.quadraticCurveTo(14, -15, -8, -10 + bodyWave * 0.5);
+      ctx.quadraticCurveTo(-22, -5 + bodyWave, -26, bodyWave);
+      ctx.quadraticCurveTo(-22, 5 + bodyWave, -8, 10 + bodyWave * 0.5);
+      ctx.quadraticCurveTo(14, 15, 30, 0);
+      ctx.fill();
+
+      // Ornamental spots
+      ctx.fillStyle = palette.spots;
+      ctx.beginPath();
+      ctx.arc(8, -3, 7, 0, Math.PI * 2);
+      ctx.arc(-7, 2 + bodyWave * 0.4, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Eyes
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.arc(21, -6, 2.2, 0, Math.PI * 2);
+      ctx.arc(21, 6, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // Random Avatar on top of head + Student Name
+      const headOffset = 14 * sizeScale;
+      const headX = player.x + Math.cos(player.angle || 0) * headOffset;
+      const headY = player.y + Math.sin(player.angle || 0) * headOffset;
+
+      ctx.save();
+      ctx.globalAlpha = 0.85 + z * 0.15;
+
+      const avatarR = 13 * Math.max(0.8, depthScale);
+      const avatarY = headY - 20 * depthScale;
+
+      ctx.beginPath();
+      ctx.arc(headX, avatarY, avatarR + 2, 0, Math.PI * 2);
+      ctx.fillStyle = player.id === localId ? "#fde047" : "#38bdf8";
+      ctx.fill();
+
+      const imgObj = loadedAvatars[player.avatar];
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(headX, avatarY, avatarR, 0, Math.PI * 2);
+      ctx.clip();
+
+      if (imgObj) {
+        ctx.drawImage(imgObj, headX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+      } else {
+        ctx.fillStyle = "#1e293b";
+        ctx.fillRect(headX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+        ctx.fillStyle = "#fff";
+        ctx.font = `bold ${Math.round(avatarR)}px sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText((player.name || "S")[0].toUpperCase(), headX, avatarY);
+      }
+      ctx.restore();
+
+      // Name & Weight Tag
+      ctx.font = "600 12px 'Segoe UI', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(2, 12, 22, 0.7)";
+      const label = `${player.name} (${weight.toFixed(1)}kg)`;
+      const textW = ctx.measureText(label).width + 10;
+      ctx.fillRect(headX - textW / 2, avatarY - avatarR - 20, textW, 16);
+
+      ctx.fillStyle = player.id === localId ? "#fef08a" : "#e0f2fe";
+      ctx.fillText(label, headX, avatarY - avatarR - 8);
+      ctx.restore();
+    }
+
+    function drawFoodsAndSurface() {
+      for (const f of foods) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.isNutritious !== false ? 6 : 8, 0, Math.PI * 2);
+        ctx.fillStyle = f.isNutritious !== false ? "#facc15" : "#7f1d1d";
+        ctx.shadowColor = f.isNutritious !== false ? "#fef08a" : "#ef4444";
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      for (const pad of lilyPads) {
+        ctx.save();
+        ctx.translate(pad.x, pad.y);
+        ctx.rotate(pad.angle);
+        ctx.fillStyle = "rgba(21, 128, 61, 0.78)";
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, pad.r, 0.25, Math.PI * 2 - 0.25);
+        ctx.closePath();
+        ctx.fill();
+
+        if (pad.hasFlower) {
+          ctx.fillStyle = "#fbcfe8";
+          for (let i = 0; i < 6; i++) {
+            ctx.rotate(Math.PI / 3);
+            ctx.beginPath();
+            ctx.ellipse(8, 0, 7, 3.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = "#facc15";
+          ctx.beginPath();
+          ctx.arc(0, 0, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const rp = ripples[i];
+        rp.r += 1.2;
+        rp.alpha -= 0.015;
+        if (rp.alpha <= 0 || rp.r >= rp.maxR) {
+          ripples.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.strokeStyle = rp.color;
+        ctx.globalAlpha = rp.alpha;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.alpha -= 0.014;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.font = "bold 14px 'Segoe UI', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = ft.color;
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 4;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+    }
+
+    // =========================================================================
+    // 9. MAIN GAME LOOP
+    // =========================================================================
+    let lastTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      updateLocalFish(dt);
+      updateCatfish(dt);
+
+      ctx.clearRect(0, 0, width, height);
+      drawPondBackground();
+
+      if (catfish.state === "SHADOW") {
+        drawCatfish();
+      }
+
+      // Sort all connected players by depth Z (bottom to surface)
+      const sortedPlayers = Object.values(allPlayers).sort((a, b) => (a.z ?? 0.5) - (b.z ?? 0.5));
+      for (const p of sortedPlayers) {
+        drawKoiFish(p, now);
+      }
+
+      if (catfish.state === "ATTACK") {
+        drawCatfish();
+      }
+
+      drawFoodsAndSurface();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    initPlayerSync();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
