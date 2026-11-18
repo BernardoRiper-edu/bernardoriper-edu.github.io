@@ -10,6 +10,7 @@ Site de professor (Jekyll + GitHub Pages).
 | Textos das páginas IB, IGCSE, SAT, ENEM (sobre, "como posso ajudar", disciplinas, formato) | `_data/programas.yml` |
 | **Escola atual** (nome, sigla, paleta de 5 cores, turmas, materiais, plantão) | `_data/escola.yml` |
 | Como funciona / formatos / investimento / FAQ | `aulas.html` |
+| Jogos interativos (página da escola) | `_data/jogos.yml` + HTML em `escola/jogos/<jogo>/` + GIF em `assets/jogos/` |
 
 ## Páginas
 

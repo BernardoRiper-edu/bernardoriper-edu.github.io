@@ -84,4 +84,26 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
   </section>
 </div>
 
+{% if site.data.jogos and site.data.jogos.size > 0 %}
+<section class="wrap block">
+  <div class="block-head"><h2>Jogos interativos</h2></div>
+  <div class="games">
+    {% for j in site.data.jogos %}
+      <a class="game" href="{{ j.url | relative_url }}" target="_blank" rel="noopener">
+        <div class="game-media">
+          <span class="game-placeholder" aria-hidden="true">{{ j.titulo }}</span>
+          {% if j.gif != "" and j.gif %}
+            <img src="{{ j.gif | relative_url }}" alt="Prévia do jogo {{ j.titulo }}" loading="lazy" onerror="this.remove()">
+          {% endif %}
+        </div>
+        <div class="game-body">
+          <h3>{{ j.titulo }}</h3>
+          {% if j.descricao %}<p>{{ j.descricao }}</p>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 </div>
