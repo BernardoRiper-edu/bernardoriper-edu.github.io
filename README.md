@@ -8,7 +8,8 @@ Site de professor (Jekyll + GitHub Pages).
 |---|---|
 | E-mail, WhatsApp, Instagram, LinkedIn, link do Calendly | `_config.yml` |
 | Textos das páginas IB, IGCSE, SAT, ENEM (sobre, "como posso ajudar", disciplinas, formato) | `_data/programas.yml` |
-| **Escola atual** (nome, sigla, paleta de 5 cores, turmas, materiais, plantão) | `_data/escola.yml` |
+| **Escola atual** (nome, sigla, paleta de 5 cores, anos, plantão, links úteis) | `_data/escola.yml` |
+| **Materiais por ano** (PDFs dos alunos) | `assets/materiais/<ano>/<tipo>/` — ex.: `assets/materiais/Y9/lista/Lista 03.pdf` |
 | Como funciona / formatos / investimento / FAQ | `aulas.html` |
 | Jogos interativos (página da escola) | `_data/jogos.yml` + HTML em `escola/jogos/<jogo>/` + GIF em `assets/jogos/` |
 
@@ -52,3 +53,10 @@ Fontes (hospedadas no próprio site, em `assets/fonts/`): Bricolage Grotesque no
 Edite só `_data/escola.yml`: `nome`, `sigla`, as 5 `cores` (principal, destaque, texto, fundo, linhas) e o conteúdo.
 O menu, os filtros, as etiquetas e a página `/escola/` se ajustam sozinhos; o endereço `/escola/` não muda.
 Com `aplicar_no_site_todo: true` a paleta da escola vale para o site inteiro; com `false`, só para a página da escola e os avisos dela.
+
+## Materiais por ano (página da escola)
+
+Cada ano (Y7 a Y13) tem três pastas em `assets/materiais/<ano>/`: `material`, `lista` e `gabarito`.
+Para publicar um arquivo, suba o PDF na pasta certa — o site lista sozinho e abre o PDF numa janela com visualizador.
+O nome do arquivo é o que os alunos veem; a lista é ordenada pelo nome (Lista 2 vem antes de Lista 10).
+Os anos e os tipos ficam em `_data/escola.yml` (bloco `materiais`). O visualizador usa o PDF.js (em `assets/vendor/pdfjs/`).

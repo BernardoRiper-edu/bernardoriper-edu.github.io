@@ -38,26 +38,64 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
 </section>
 
 <section class="wrap block">
-  <div class="block-head"><h2>Materiais por turma</h2></div>
-  <div class="folders">
-    {% for turma in t.turmas %}
-      <div class="folder">
-        <h3>{{ turma.nome }}</h3>
-        <p class="muted">{{ turma.disciplina }}</p>
-        <ul class="link-list">
-          {% for l in turma.links %}
+  <div class="block-head"><h2>Materiais por ano</h2></div>
+  {% assign m = t.materiais %}
+  <div class="years" id="materiais"
+       data-base="{{ m.pasta | relative_url }}"
+       data-pdfjs="{{ '/assets/vendor/pdfjs/' | relative_url }}">
+    {% for ano in m.anos %}
+      <section class="year" aria-labelledby="ano-{{ ano }}">
+        <h3 id="ano-{{ ano }}"><span class="year-tag">{{ ano }}</span></h3>
+        <ul class="year-rows">
+          {% for tipo in m.tipos %}
             <li>
-              {% if l.url != "" and l.url %}
-                <a href="{{ l.url | relative_url }}" target="_blank" rel="noopener">{{ l.titulo }}</a>
-              {% else %}
-                <span>{{ l.titulo }}</span> <span class="soon">em breve</span>
-              {% endif %}
+              <button type="button" class="year-row" data-ano="{{ ano }}" data-tipo="{{ tipo.pasta }}" data-titulo="{{ tipo.titulo }}" disabled>
+                <span class="yr-name">{{ tipo.titulo }}</span>
+                <span class="yr-count">em breve</span>
+              </button>
             </li>
           {% endfor %}
         </ul>
-      </div>
+      </section>
     {% endfor %}
   </div>
+
+  {% comment %} Lista de arquivos gerada pelo Jekyll a partir das pastas em assets/materiais/ {% endcomment %}
+  <script type="application/json" id="materiais-arquivos">[
+    {%- assign primeiro = true -%}
+    {%- for f in site.static_files -%}
+      {%- if f.path contains m.pasta -%}
+        {%- unless primeiro %},{% endunless -%}
+        {"path": {{ f.path | jsonify }}, "url": {{ f.path | relative_url | jsonify }}, "nome": {{ f.basename | jsonify }}, "ext": {{ f.extname | downcase | jsonify }}, "data": {{ f.modified_time | date: "%Y-%m-%d" | jsonify }}}
+        {%- assign primeiro = false -%}
+      {%- endif -%}
+    {%- endfor -%}
+  ]</script>
+
+  <dialog class="mat-dialog" id="mat-dialog" aria-labelledby="mat-title">
+    <div class="mat-head">
+      <button type="button" class="mat-icon mat-back" hidden aria-label="Voltar para a lista">&larr;</button>
+      <div class="mat-titles">
+        <p class="mat-kicker" id="mat-kicker"></p>
+        <h2 id="mat-title"></h2>
+      </div>
+      <a class="mat-link" id="mat-download" hidden download>Baixar</a>
+      <button type="button" class="mat-icon mat-close" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="mat-body">
+      <ul class="mat-list" id="mat-list"></ul>
+      <div class="mat-viewer" id="mat-viewer" hidden>
+        <div class="mat-toolbar">
+          <button type="button" class="mat-icon" data-zoom="-1" aria-label="Diminuir zoom">&minus;</button>
+          <span class="mat-zoom" id="mat-zoom">100%</span>
+          <button type="button" class="mat-icon" data-zoom="1" aria-label="Aumentar zoom">+</button>
+          <span class="mat-pageinfo" id="mat-pageinfo"></span>
+        </div>
+        <div class="mat-pages" id="mat-pages"></div>
+      </div>
+    </div>
+  </dialog>
+  <script type="module" src="{{ '/assets/js/materiais.js' | relative_url }}"></script>
 </section>
 
 <div class="wrap block split">

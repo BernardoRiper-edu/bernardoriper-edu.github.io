@@ -38,16 +38,23 @@ plantao:
   texto: "Consulte o horário do plantão com o professor da turma."
   url: ""   # opcional: link de agendamento do plantão
 
-turmas:
-  - nome: "Turma / Year — editar"
-    disciplina: "Disciplina — editar"
-    links:
-      - titulo: "Materiais de aula"
-        url: ""
-      - titulo: "Listas de exercícios"
-        url: ""
-      - titulo: "Gabaritos"
-        url: ""
+# -----------------------------------------------------------------
+#  MATERIAIS POR ANO
+#  Os arquivos ficam em assets/materiais/<ano>/<tipo>/ — por exemplo:
+#    assets/materiais/Y9/lista/Lista 03 - Cinematica.pdf
+#  O site lista sozinho o que estiver em cada pasta (não precisa editar nada aqui).
+#  O nome do arquivo é o que os alunos veem: use nomes claros.
+# -----------------------------------------------------------------
+materiais:
+  pasta: "/assets/materiais/"
+  anos: ["Y7", "Y8", "Y9", "Y10", "Y11", "Y12", "Y13"]
+  tipos:
+    - pasta: "material"
+      titulo: "Materiais de aula"
+    - pasta: "lista"
+      titulo: "Listas de exercícios"
+    - pasta: "gabarito"
+      titulo: "Gabaritos"
 
 links_uteis:
   - titulo: "Calendário escolar"
