@@ -16,6 +16,10 @@ linkedin: ""         # URL completa
 
 author: "Bernardo Riper"
 
+# Verificação do Google Search Console (gerada pelo jekyll-seo-tag)
+webmaster_verifications:
+  google: "S_27wATLm9haWLhLPYK4sbClXFWw7v_TgkQv02YuDNM"
+
 collections:
   articles:
     output: true
