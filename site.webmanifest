@@ -1,0 +1,14 @@
+---
+layout: null
+---
+{
+  "name": {{ site.title | jsonify }},
+  "short_name": "Bernardo Riper",
+  "icons": [
+    { "src": "{{ '/assets/icons/icon-192.png' | relative_url }}", "sizes": "192x192", "type": "image/png" },
+    { "src": "{{ '/assets/icons/icon-512.png' | relative_url }}", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "browser"
+}
