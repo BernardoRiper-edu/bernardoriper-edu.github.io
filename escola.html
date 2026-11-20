@@ -131,7 +131,7 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
         <div class="game-media">
           <span class="game-placeholder" aria-hidden="true">{{ j.titulo }}</span>
           {% if j.gif != "" and j.gif %}
-            <img src="{{ j.gif | relative_url }}" alt="Prévia do jogo {{ j.titulo }}" loading="lazy" onerror="this.remove()">
+            <img src="{{ j.gif | relative_url }}" alt="Prévia do jogo {{ j.titulo }}" loading="lazy" onerror="this.remove()"{% if j.gif_fundo %} class="contain" style="background:{{ j.gif_fundo }}"{% endif %}>
           {% endif %}
         </div>
         <div class="game-body">

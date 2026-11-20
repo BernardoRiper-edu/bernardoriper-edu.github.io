@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DivisA — matemática recreativa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Silkscreen&family=Spectral:wght@400;600;800&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+/* VOICE: jogo de cartas de bar gótico — sério, preto e branco, um toque de sangue.
+   IDEA: uma mesa de feltro negro onde cartas de frações são baixadas como num duelo.
+   PICTURE: a carta-objetivo no centro da mesa, as mãos dos dois duelistas acima e abaixo.
+   COLOUR and TYPE: preto, osso, vermelho #d7263d só no alvo; UnifrakturMaguntia, Silkscreen, Spectral.
+   LAYOUT: menu = logo grande; partida = adversário / mesa / sua mão, empilhado no celular. */
+:root{color-scheme:dark;--bg:#0a0a0a;--felt:#141414;--ink:#efece4;--dim:#9b978d;--line:#2c2c2c;--red:#d7263d;--card:#f4f1e8;--cardink:#111}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(ellipse at 50% 40%,#1c1c1c 0,#0a0a0a 70%) fixed;color:var(--ink);font:16px/1.5 Spectral,Georgia,serif;overflow-x:clip}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.screen{display:none;min-height:100vh;padding:clamp(16px,3vw,40px) max(4vw,12px)}
+.screen.on{display:block}
+.goth{font-family:UnifrakturMaguntia,serif;font-weight:400}
+.px{font-family:Silkscreen,monospace;letter-spacing:.02em}
+.btn{min-height:44px;padding:10px 18px;border:1.5px solid var(--ink);background:transparent;border-radius:3px;font-family:Silkscreen,monospace;font-size:14px;transition:background .15s,color .15s}
+.btn:hover:not(:disabled){background:var(--ink);color:#000}
+.btn.red{border-color:var(--red);color:#fff;background:var(--red)}
+.btn.red:hover:not(:disabled){background:#fff;color:var(--red);border-color:#fff}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.sm{min-height:38px;padding:6px 12px;font-size:12px}
+/* menu */
+#menu{position:relative;overflow:hidden;padding:0;background:#000}
+#scene{position:absolute;inset:0;width:100%;height:100%}
+#scene .digit{font-family:'Archivo Black',Impact,sans-serif}
+#one,#zero,#wall{transform-box:fill-box;transform-origin:50% 100%}
+.mfront{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center;padding:24px 16px 56px}
+#mlogo{width:min(820px,94vw);height:auto;opacity:0;filter:drop-shadow(0 6px 30px #000)}
+#mbtns{display:flex;flex-direction:column;align-items:center;gap:14px;opacity:0;pointer-events:none;transition:opacity .9s}
+#mbtns.on{opacity:1;pointer-events:auto}
+.mlist .btn{background:#000b}
+#gate{position:fixed;inset:0;z-index:60;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;cursor:pointer;text-align:center;padding:20px}
+#gate.off{display:none}
+#gate .blink{animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.mlist{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.mlist .btn{min-width:150px}
+.mlist .btn.sel{background:var(--ink);color:#000}
+.hint{color:var(--dim);font-size:13px}
+.ver{position:fixed;right:14px;bottom:10px;color:#555;font-size:12px}
+#mute{position:fixed;top:12px;right:12px;z-index:30;width:44px;height:44px;border:1px solid var(--line);background:#000a;border-radius:50%;font-size:18px}
+/* páginas de texto */
+.page{max-width:820px;margin:0 auto}
+.page h1{font-size:clamp(40px,7vw,64px);line-height:1;margin:10px 0 18px}
+.page h2{font-family:Silkscreen,monospace;font-size:16px;margin:28px 0 8px;color:var(--red)}
+.page p,.page li{color:#d9d5cb}
+.page ol{padding-left:22px}.page li{margin:6px 0}
+table{border-collapse:collapse;width:100%}
+td,th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;font-size:15px}
+th{font-family:Silkscreen,monospace;font-size:12px;color:var(--dim);font-weight:400}
+.n{text-align:right;white-space:nowrap}
+.back-row{margin-top:30px;display:flex;gap:10px;flex-wrap:wrap}
+/* setup */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:12px}
+.opt{display:block;border:1.5px solid var(--line);border-radius:4px;padding:14px;cursor:pointer;background:#0d0d0d}
+.opt input{accent-color:var(--red);margin-right:8px}
+.opt:has(input:checked){border-color:var(--ink);background:#1a1a1a}
+.opt small{display:block;color:var(--dim);margin-top:4px;font-size:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field input{font:16px Spectral,serif;padding:10px 12px;background:#0d0d0d;border:1.5px solid var(--line);color:var(--ink);border-radius:3px;min-height:44px}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:12px}
+/* jogo */
+#game{padding-top:12px;max-width:1180px;margin:0 auto}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px;padding-right:56px}
+.top img{height:34px;width:auto}
+.top .sp{flex:1}
+.seat{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:#0e0e0ecc}
+.seat.act{border-color:var(--ink)}
+.who{display:flex;flex-direction:column;line-height:1.15}
+.who b{font-size:20px}
+.who span{font-size:13px;color:var(--dim)}
+.role{font-family:Silkscreen,monospace;font-size:11px;padding:3px 7px;border:1px solid currentColor;border-radius:2px}
+.role.att{color:var(--red)}
+.pts{font-family:Silkscreen,monospace;font-size:13px}
+.backs{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.minib{width:22px;height:30px;border-radius:2px;background:url(assets/back.jpg) center/cover;border:1px solid #666}
+.table{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:center;margin:14px 0;padding:18px;border-radius:10px;background:radial-gradient(ellipse at center,#1f1f1f,#0f0f0f);border:1px solid var(--line);min-height:220px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.slot .lbl{font-family:Silkscreen,monospace;font-size:11px;color:var(--dim)}
+.target-wrap{position:relative}
+.restr{font-family:Silkscreen,monospace;font-size:11px;color:#fff;background:var(--red);padding:3px 8px;border-radius:2px}
+.last{font-size:15px;color:#d9d5cb;min-height:2.6em;display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center}
+.status{text-align:center;font-size:17px;margin:4px 0 10px;min-height:1.6em}
+.status b{color:#fff}
+/* cartas */
+.card{position:relative;width:76px;height:108px;border-radius:7px;border:none;padding:0;flex:none;background:var(--card);color:var(--cardink);box-shadow:0 3px 0 #000,0 6px 16px #0008;transition:transform .15s,box-shadow .15s;display:flex;align-items:center;justify-content:center}
+.card::after{content:"";position:absolute;inset:4px;border:1px solid #0003;border-radius:4px;pointer-events:none}
+.card .fr{display:inline-flex;flex-direction:column;align-items:center;font:800 30px/1 Spectral,serif}
+.card .fr i{display:block;width:34px;height:3px;background:currentColor;margin:5px 0}
+.card .t{position:absolute;top:6px;left:0;right:0;font:9px Silkscreen,monospace;color:#777;text-align:center}
+.card.op{background:#111;color:#fff;border:1.5px solid #555;font:600 40px/1 Spectral,serif;width:62px;height:88px}
+.card.op::after{border-color:#fff2}
+.card.back{background:url(assets/back.jpg) center/cover;border:2px solid #ddd}
+.card.big{width:120px;height:170px;border-radius:10px}
+.card.big .fr{font-size:52px}.card.big .fr i{width:58px;height:4px;margin:8px 0}
+.card.big .t{font-size:11px;top:10px}
+.card.target{box-shadow:0 0 0 3px var(--red),0 0 40px #d7263d55,0 8px 20px #000}
+.card.empty{background:transparent;border:1.5px dashed #444;box-shadow:none;color:#666;font-size:13px;padding:10px}
+.card.empty::after{display:none}
+button.card:not(:disabled):hover{transform:translateY(-6px)}
+button.card:disabled{cursor:default}
+.card.sel{transform:translateY(-12px);box-shadow:0 0 0 3px var(--red),0 10px 18px #000}
+.card .ord{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;font:12px/22px Silkscreen,monospace;text-align:center}
+.card.hint{animation:pulse 1s ease-in-out 3}
+@keyframes pulse{50%{box-shadow:0 0 0 4px #fff,0 0 28px #fff}}
+.card.flip{animation:flip .45s ease-out}
+@keyframes flip{from{transform:rotateY(90deg) scale(.8)}to{transform:none}}
+.deck{position:relative;width:76px;height:108px}
+.deck .card{position:absolute;left:0;top:0}
+.hand{display:flex;flex-wrap:wrap;gap:10px;padding-top:14px;align-items:flex-end}
+.opsrow{display:flex;gap:10px;padding-top:14px;align-items:flex-end}
+.mine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end}
+.sub{font-family:Silkscreen,monospace;font-size:11px;color:var(--dim);margin-top:10px}
+.preview{margin:14px 0 6px;min-height:58px;padding:10px 14px;border-left:3px solid var(--line);font-size:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.plays{margin-top:14px;padding:10px 14px;border:1px solid var(--line);border-radius:4px;font-size:16px;display:none}
+.plays.on{display:block}
+.plays b{font-family:Silkscreen,monospace;font-size:15px}
+.plays.zero{border-color:var(--red);background:#d7263d1f}
+.btn.call{animation:call 1.1s ease-in-out infinite}
+@keyframes call{50%{box-shadow:0 0 0 4px #d7263d88}}
+.preview.ok{border-color:#4caf50}.preview.bad{border-color:var(--red)}
+.sf{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-weight:800;line-height:1.05;margin:0 2px}
+.sf b:first-child{border-bottom:2px solid currentColor;padding:0 3px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.log{margin-top:18px;border-top:1px solid var(--line);padding-top:10px}
+.log summary{cursor:pointer;font-family:Silkscreen,monospace;font-size:12px;color:var(--dim);min-height:32px}
+.log ol{margin:6px 0 0;padding-left:20px;font-size:14px;color:#bdb9af;max-height:200px;overflow:auto}
+/* modal */
+.ov{position:fixed;inset:0;background:#000d;display:none;align-items:center;justify-content:center;z-index:40;padding:16px}
+.ov.on{display:flex}
+.box{width:min(520px,100%);background:#111;border:1.5px solid var(--ink);border-radius:8px;padding:24px;text-align:center;max-height:92vh;overflow:auto}
+.box h3{font-family:UnifrakturMaguntia,serif;font-weight:400;font-size:40px;line-height:1.05;margin:0 0 10px}
+.box p{color:#d9d5cb}
+.box .actions{justify-content:center;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#000;border:1px solid var(--ink);padding:10px 16px;border-radius:4px;z-index:50;font-size:15px;max-width:92vw;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+@media (max-width:760px){
+  .table{grid-template-columns:1fr 1fr;padding:12px}
+  .table .center{grid-column:1/-1;order:-1}
+  .card{width:58px;height:84px}.card .fr{font-size:23px}.card .fr i{width:26px}
+  .card.op{width:50px;height:72px;font-size:32px}
+  .card.big{width:96px;height:136px}.card.big .fr{font-size:40px}
+  .deck{width:58px;height:84px}
+  .mine{grid-template-columns:1fr}
+  .hand{gap:7px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<button id="mute" title="Música e sons" aria-label="Ligar ou desligar som">♪</button>
+
+<!-- MENU -->
+<div id="gate" role="button" tabindex="0" aria-label="Começar">
+  <span class="px blink" style="font-size:16px">Toque ou aperte qualquer tecla</span>
+  <span class="hint">Ligue o som.</span>
+</div>
+<section id="menu" class="screen on">
+  <svg id="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="vig" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#202020"/><stop offset="1" stop-color="#000"/></radialGradient>
+      <pattern id="brick" width="180" height="88" patternUnits="userSpaceOnUse" patternTransform="rotate(-25.35)">
+        <rect width="180" height="88" fill="#383838"/>
+        <g fill="#727272">
+          <rect x="6" y="8" width="108" height="28" rx="5"/><circle cx="150" cy="22" r="15"/>
+          <circle cx="60" cy="66" r="15"/><rect x="96" y="52" width="108" height="28" rx="5"/><rect x="-84" y="52" width="108" height="28" rx="5"/>
+        </g>
+        <g fill="none" stroke="#8e8e8e" stroke-width="3" stroke-linecap="round">
+          <path d="M12 10.5H108M102 54.5H176M2 54.5H18"/><path d="M139 13a15 15 0 0 1 22 0M49 57a15 15 0 0 1 22 0"/>
+        </g>
+      </pattern>
+      <linearGradient id="wshade" gradientUnits="userSpaceOnUse" x1="0" y1="200" x2="0" y2="900"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".65"/></linearGradient>
+      <linearGradient id="oneg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#e6e1d6"/><stop offset="1" stop-color="#bdb7aa"/></linearGradient>
+      <linearGradient id="wtop" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d8d8d"/><stop offset="1" stop-color="#b4b4b4"/></linearGradient>
+      <text id="oneT" class="digit" x="1235" y="1035" font-size="1120" text-anchor="middle">1</text>
+      <text id="zeroT" class="digit" x="560" y="880" font-size="860" text-anchor="middle">0</text>
+    </defs>
+    <rect x="-2000" y="-4000" width="5600" height="5000" fill="#000"/><rect x="-2000" y="-4000" width="5600" height="5000" fill="url(#vig)"/>
+    <g id="sc">
+      <g id="zero"><g id="zeroX"></g><use href="#zeroT" fill="#0b0b0b" stroke="#ece8dd" stroke-width="12"/></g>
+      <g id="wall">
+        <polygon points="-1000,1402 2600,-304 2530,-362 -1070,1344" fill="url(#wtop)"/>
+        <path d="M-1070,1344 L2530,-362" stroke="#c9c9c9" stroke-width="3" opacity=".7"/>
+        <polygon points="-1000,1402 2600,-304 2600,3000 -1000,3000" fill="url(#brick)"/>
+        <polygon points="-1000,1402 2600,-304 2600,3000 -1000,3000" fill="url(#wshade)"/>
+        <line x1="-1000" y1="1402" x2="2600" y2="-304" stroke="#d0d0d0" stroke-width="5"/>
+      </g>
+      <g id="one"><g id="oneX"></g><use href="#oneT" fill="url(#oneg)" stroke="#fff" stroke-width="2"/></g>
+    </g>
+    <rect id="dim" x="-2000" y="-4000" width="5600" height="5000" fill="#000" opacity="0"/>
+    <rect id="flash" x="-2000" y="-4000" width="5600" height="5000" fill="#fff" opacity="0"/>
+  </svg>
+  <div class="mfront">
+  <img id="mlogo" src="assets/logo.png" alt="DivisA — matemática recreativa">
+  <div id="mbtns">
+  <div class="mlist" id="mlist">
+    <button class="btn sel" data-go="setup">Jogar</button>
+    <button class="btn" data-go="rules">Como jogar</button>
+    <button class="btn" data-go="scores">Pontuação</button>
+    <button class="btn" data-go="credits">Créditos</button>
+  </div>
+  <div class="hint">Use A e D (ou as setas) e Espaço para escolher, como no original.</div>
+  </div>
+  </div>
+  <div class="ver px">Ver. 1.1 · web</div>
+</section>
+
+<!-- REGRAS -->
+<section id="rules" class="screen">
+  <div class="page">
+    <h1 class="goth">Como jogar</h1>
+    <p>DivisA é um duelo de frações para dois jogadores. Um ataca com uma fração; o outro precisa chegar ao mesmo valor usando as cartas da própria mão.</p>
+    <h2>Preparação</h2>
+    <ol>
+      <li>Cada jogador recebe <b>7 cartas de fração</b> e <b>3 cartas de operação</b> (+ − × ÷).</li>
+      <li>O baralho tem 140 cartas: duas cópias de cada fração com numerador de 1 a 10 e denominador 2, 3, 4, 5, 6, 8 ou 10. O resto vira o monte de compra.</li>
+      <li>Um sorteio decide quem ataca primeiro.</li>
+    </ol>
+    <h2>A rodada</h2>
+    <ol>
+      <li><b>Ataque:</b> o atacante baixa uma fração da mão. Ela vira a <b>carta-objetivo</b>.</li>
+      <li>Pagando <b>2 pontos</b>, o atacante pode exigir o tipo de fração que o defensor vai usar: só <b>próprias</b> (numerador menor que o denominador) ou só <b>impróprias</b> (numerador maior ou igual).</li>
+      <li><b>Defesa:</b> o defensor deve chegar a um valor <b>equivalente</b> ao da carta-objetivo, de um destes jeitos:
+        <ul><li>uma única fração equivalente (ex.: 2/4 defende 1/2);</li>
+        <li>duas frações e uma operação (ex.: 1/4 + 1/4 = 1/2). A ordem importa na subtração e na divisão.</li></ul></li>
+      <li>Se não conseguir, o defensor <b>compra cartas</b> do monte, uma por vez, até no máximo <b>3 por rodada</b>. Se ainda assim não der, ele <b>cede a rodada</b>: o atacante ganha 2 pontos e ataca de novo.</li>
+      <li><b>Contra-ataque:</b> pagando <b>3 pontos</b>, o defensor pode ignorar a carta-objetivo e baixar uma fração nova. Os papéis se invertem: quem atacou agora defende.</li>
+      <li>Depois de uma defesa bem-sucedida, o defensor passa a ser o atacante. A operação usada é reposta automaticamente.</li>
+    </ol>
+    <h2>Pontos</h2>
+    <table>
+      <thead><tr><th>Jogada</th><th class="n">Pontos</th></tr></thead>
+      <tbody>
+        <tr><td>Defender com 1 carta equivalente</td><td class="n">+3</td></tr>
+        <tr><td>Defender com 2 frações e 1 operação</td><td class="n">+1</td></tr>
+        <tr><td>Defensor cede a rodada (atacante ganha)</td><td class="n">+2</td></tr>
+        <tr><td>Exigir o tipo de fração (atacante)</td><td class="n">−2</td></tr>
+        <tr><td>Contra-ataque (defensor)</td><td class="n">−3</td></tr>
+        <tr><td>Dica: mostra uma defesa possível</td><td class="n">−1</td></tr>
+        <tr><td>Repor o monte de compra (cada jogador)</td><td class="n">−2</td></tr>
+      </tbody>
+    </table>
+    <h2>Fim de jogo</h2>
+    <ol>
+      <li>Vence quem <b>zerar a mão</b>. A checagem é feita ao fim de cada defesa.</li>
+      <li>Se o monte acabar, os dois podem concordar em repor (o descarte é embaralhado), pagando 2 pontos cada. Se não reporem, vence quem tiver <b>menos cartas</b>. No empate, vence quem tiver mais pontos.</li>
+    </ol>
+    <h2>Modos de cálculo</h2>
+    <p><b>Assistido:</b> o jogo mostra o resultado da conta enquanto você escolhe as cartas. É bom para aprender.<br><b>Desafio:</b> o resultado fica escondido, e uma defesa errada custa uma carta comprada.</p>
+    <div class="back-row"><button class="btn" data-go="menu">Voltar</button><button class="btn red" data-go="setup">Jogar</button></div>
+  </div>
+</section>
+
+<!-- PONTUAÇÃO -->
+<section id="scores" class="screen">
+  <div class="page">
+    <h1 class="goth">Pontuação</h1>
+    <p class="hint">Partidas salvas neste navegador.</p>
+    <div id="scoreBody"></div>
+    <div class="back-row"><button class="btn" data-go="menu">Voltar</button><button class="btn sm" id="clearHist">Apagar histórico</button></div>
+  </div>
+</section>
+
+<!-- CRÉDITOS -->
+<section id="credits" class="screen">
+  <div class="page">
+    <h1 class="goth">Créditos</h1>
+    <p><b>DivisA — matemática recreativa</b><br>Projeto de jogo com frações da Licenciatura em Matemática, FTESM.</p>
+    <p>Concepção, regras, arte e trilha: Bernardo Riper.<br>Versão original em C para console: Ver. 0.1 (11/11/2021).<br>Versão web: 1.0 (2026), com as regras reorganizadas e o motor de frações reescrito.</p>
+    <div class="back-row"><button class="btn" data-go="menu">Voltar</button></div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup" class="screen">
+  <div class="page">
+    <h1 class="goth">Nova partida</h1>
+    <h2>Modo</h2>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="mode" value="cpu" checked>Contra o computador<small>Você contra a máquina.</small></label>
+      <label class="opt"><input type="radio" name="mode" value="2p">Dois jogadores<small>No mesmo aparelho, passando a vez.</small></label>
+    </div>
+    <h2>Jogadores</h2>
+    <div class="names">
+      <label class="field"><span>Jogador 1</span><input id="n1" maxlength="16" value="Jogador 1"></label>
+      <label class="field" id="n2f"><span>Jogador 2</span><input id="n2" maxlength="16" value="Jogador 2"></label>
+    </div>
+    <div id="diffBox">
+      <h2>Dificuldade do computador</h2>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="diff" value="facil">Fácil<small>Às vezes não vê as contas.</small></label>
+        <label class="opt"><input type="radio" name="diff" value="medio" checked>Médio<small>Joga bem e de vez em quando se distrai.</small></label>
+        <label class="opt"><input type="radio" name="diff" value="dificil">Difícil<small>Vê todas as contas e usa os pontos.</small></label>
+      </div>
+    </div>
+    <h2>Cálculo</h2>
+    <div class="opts">
+      <label class="opt"><input type="radio" name="calc" value="assist" checked>Assistido<small>Mostra o resultado da conta antes de confirmar.</small></label>
+      <label class="opt"><input type="radio" name="calc" value="desafio">Desafio<small>Conta de cabeça. Defesa errada custa uma carta.</small></label>
+    </div>
+    <div class="back-row"><button class="btn" data-go="menu">Voltar</button><button class="btn red" id="startBtn">Começar</button></div>
+  </div>
+</section>
+
+<!-- JOGO -->
+<section id="game" class="screen">
+  <div class="top">
+    <img src="assets/logo.png" alt="DivisA">
+    <span class="sp"></span>
+    <button class="btn sm" id="rulesIn">Regras</button>
+    <button class="btn sm" id="quit">Sair</button>
+  </div>
+  <div class="seat" id="oppSeat"></div>
+  <div class="table">
+    <div class="slot">
+      <span class="lbl">Monte</span>
+      <div class="deck" id="deck"></div>
+      <span class="px" id="deckN" style="font-size:12px"></span>
+    </div>
+    <div class="slot center">
+      <span class="lbl">Carta-objetivo</span>
+      <div class="target-wrap" id="target"></div>
+      <span id="restr"></span>
+    </div>
+    <div class="slot">
+      <span class="lbl">Última jogada</span>
+      <div class="last" id="last">—</div>
+    </div>
+  </div>
+  <div class="status" id="status"></div>
+  <div class="seat" id="mySeat" style="display:block">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap" id="myHead"></div>
+    <div class="mine">
+      <div><div class="sub">Frações</div><div class="hand" id="hand"></div></div>
+      <div><div class="sub">Operações</div><div class="opsrow" id="ops"></div></div>
+    </div>
+    <div class="plays" id="plays"></div>
+    <div class="preview" id="preview"></div>
+    <div class="actions" id="actions"></div>
+  </div>
+  <details class="log"><summary>Histórico da partida</summary><ol id="log" reversed></ol></details>
+</section>
+
+<div class="ov" id="ov"><div class="box" id="box"></div></div>
+<div class="toast" id="toast"></div>
+<audio id="music" src="assets/music.mp3" preload="auto"></audio>
+
+<script>
+{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+/* ---------- matemática ---------- */
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a||1};
+const red=(n,d)=>{if(d<0){n=-n;d=-d}const g=gcd(n,d);return{n:n/g,d:d/g}};
+const calc=(a,op,b)=>{switch(op){
+  case'+':return red(a.n*b.d+b.n*a.d,a.d*b.d);
+  case'−':return red(a.n*b.d-b.n*a.d,a.d*b.d);
+  case'×':return red(a.n*b.n,a.d*b.d);
+  case'÷':return red(a.n*b.d,a.d*b.n)}};
+const eq=(a,b)=>a.n*b.d===b.n*a.d;
+const tipo=c=>c.n<c.d?'própria':'imprópria';
+const MAXDRAW=3, NUMS=[1,2,3,4,5,6,7,8,9,10], DENS=[2,3,4,5,6,8,10], OPS=['+','−','×','÷'];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const rOp=()=>OPS[Math.random()*4|0];
+const sf=f=>f.d===1?`<span class="sf"><b style="border:0">${f.n}</b></span>`:`<span class="sf"><b>${f.n}</b><b>${f.d}</b></span>`;
+const ft=f=>f.d===1?`${f.n}`:`${f.n}/${f.d}`;
+
+/* ---------- som ---------- */
+let soundOn=true, actx=null;
+const music=$('#music'); music.volume=.32;
+function beep(freqs,dur=.12,type='triangle',vol=.08){
+  if(!soundOn)return;
+  try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;
+      const t=actx.currentTime+i*dur*.8;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur*1.6);
+      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+dur*1.7)})}catch(e){}
+}
+const sfx={click:()=>beep([660],.05,'square',.03),ok:()=>beep([523,659,784,1047],.11),bad:()=>beep([196,147],.18,'sawtooth',.06),draw:()=>beep([880,740],.06,'sine',.05),play:()=>beep([392,523],.08)};
+const AC=()=>{try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.state==='suspended'&&actx.resume()}catch(e){}return actx};
+let noiseBuf=null;
+function noise(t,dur,{type='lowpass',freq=400,vol=.3,attack=.01}={}){
+  const a=AC();if(!a||!soundOn)return;
+  if(!noiseBuf){noiseBuf=a.createBuffer(1,a.sampleRate*2,a.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1}
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=noiseBuf;s.loop=true;f.type=type;f.frequency.value=freq;
+  g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  s.connect(f).connect(g).connect(a.destination);s.start(t);s.stop(t+dur+.05);
+}
+function tone(f0,f1,t,dur,vol,type='sine'){const a=AC();if(!a||!soundOn)return;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(a.destination);o.start(t);o.stop(t+dur+.05)}
+const fx={
+  thud(){const a=AC();if(!a)return;const t=a.currentTime;tone(140,38,t,.7,.6);noise(t,.35,{freq:300,vol:.35})},
+  scrape(){const a=AC();if(!a)return;const t=a.currentTime;noise(t,.8,{type:'bandpass',freq:900,vol:.18,attack:.15});tone(70,45,t+.7,.4,.35)},
+  rumble(){const a=AC();if(!a)return;const t=a.currentTime;noise(t,3.4,{freq:110,vol:.5,attack:2.6});tone(55,41,t,3.4,.25,'sawtooth')},
+  sting(){const a=AC();if(!a)return;const t=a.currentTime;noise(t,1.2,{type:'highpass',freq:3000,vol:.12});tone(880,440,t,.9,.08,'triangle')}
+};
+/* trilha de título: só na tela inicial */
+function playTitle(){if(!soundOn)return;try{music.currentTime=0}catch(e){}const p=music.play();p&&p.catch(()=>{})}
+/* trilha da partida: gerada em tempo real */
+const GM={on:false,step:0,next:0,timer:null,out:null};
+const CH=[[57,60,64],[53,57,60],[50,53,57],[52,56,59]];
+const mtof=m=>440*2**((m-69)/12);
+function gNote(m,t,d,type,v){const a=actx,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=mtof(m);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g).connect(GM.out);o.start(t);o.stop(t+d+.05)}
+function gmTick(){
+  const spb=60/92/4;
+  while(GM.next<actx.currentTime+.25){
+    const t=GM.next,s=GM.step%128,bar=(s>>4)%4,b=s%16,ch=CH[bar],second=s>=64;
+    if(b===0||b===10)gNote(ch[0]-24,t,b?.35:.6,'triangle',.55);
+    if(b===0){ch.forEach(m=>gNote(m,t,spb*15,'sawtooth',.025))}
+    if(b%2===0){const arp=[0,1,2,1,2,1,0,2],m=ch[arp[b/2]]+12+(second&&b>=8?12:0);gNote(m,t,.32,'sine',.14)}
+    if(second&&b===14)gNote(ch[2]+24,t,.5,'triangle',.06);
+    GM.next+=spb;GM.step++;
+  }
+}
+function startGameMusic(){
+  if(GM.on||!soundOn)return;const a=AC();if(!a)return;
+  GM.out=a.createGain();GM.out.gain.value=.0001;GM.out.gain.linearRampToValueAtTime(.55,a.currentTime+1.5);
+  const lp=a.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;GM.out.connect(lp).connect(a.destination);
+  GM.on=true;GM.step=0;GM.next=a.currentTime+.1;GM.timer=setInterval(gmTick,60);
+}
+function stopGameMusic(){if(!GM.on)return;GM.on=false;clearInterval(GM.timer);const o=GM.out;try{o.gain.cancelScheduledValues(actx.currentTime);o.gain.setValueAtTime(o.gain.value,actx.currentTime);o.gain.linearRampToValueAtTime(.0001,actx.currentTime+.6);setTimeout(()=>o.disconnect(),900)}catch(e){}}
+$('#mute').onclick=()=>{soundOn=!soundOn;$('#mute').textContent=soundOn?'♪':'✕';
+  if(!soundOn){music.pause();stopGameMusic()}
+  else if($('#game').classList.contains('on'))startGameMusic();
+  else if($('#menu').classList.contains('on')&&$('#mbtns').classList.contains('on')){const p=music.play();p&&p.catch(()=>{})}};
+
+/* ---------- abertura: 1, muro, e o 0 vilão ---------- */
+/* extrusão 3D: camadas recuadas para cima e para a esquerda */
+const mix=(a,b,k)=>'#'+[0,2,4].map(i=>Math.round(parseInt(a.slice(1+i,3+i),16)*(1-k)+parseInt(b.slice(1+i,3+i),16)*k).toString(16).padStart(2,'0')).join('');
+function extrude(gid,shape,n,dx,dy,back,front,extra=''){
+  let h='';for(let i=n;i>=1;i--){const k=i/n,c=mix(front,back,k);
+    h+=`<use href="#${shape}" transform="translate(${(dx*k).toFixed(1)} ${(dy*k).toFixed(1)})" ${extra.replace(/C/g,c)}/>`}
+  $(gid).innerHTML=h;
+}
+extrude('#oneX','oneT',30,-46,-34,'#2a2824','#77726a','fill="C"');
+extrude('#zeroX','zeroT',30,-40,-30,'#1a0607','#5e2a2e','fill="#070707" stroke="C" stroke-width="12"');
+
+let introRun=0;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function bonk(level){const a=AC();if(!a)return;const t=a.currentTime;
+  tone(190-level*30,48,t,.32+level*.12,.28+level*.08,'square');tone(95-level*12,30,t,.5+level*.15,.5,'sine');noise(t,.18+level*.08,{freq:500,vol:.35})}
+async function intro(){
+  const run=++introRun,alive=()=>run===introRun&&$('#menu').classList.contains('on');
+  const one=$('#one'),zero=$('#zero'),flash=$('#flash'),dim=$('#dim'),logo=$('#mlogo'),sc=$('#sc');
+  [one,zero,flash,dim,logo,sc].forEach(e=>e.getAnimations().forEach(x=>x.cancel()));
+  const A=(el,kf,o={})=>el.animate(kf,{fill:'forwards',duration:0,...o});
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const Y=[760,520,270,0],G=[0,.35,.65,1];
+  const pos=k=>({transform:`translateY(${Y[k]}px)`,filter:`drop-shadow(0 0 ${Math.round(34*G[k])}px rgba(215,38,61,${G[k]}))`});
+  A(zero,[pos(0)]);A(logo,[{opacity:0}]);
+  A(dim,[{opacity:dim.style.opacity?1:0},{opacity:0}],{duration:600});
+  await wait(1200);if(!alive())return;
+  /* o 0 sobe em 3 solavancos */
+  for(let k=1;k<=3;k++){
+    const over={transform:`translateY(${Y[k]-22}px)`,filter:pos(k).filter};
+    A(zero,[pos(k-1),over,pos(k)],{duration:reduce?1:140,easing:'steps(3,end)'});
+    await wait(90);bonk(k);
+    const m=6+k*5;
+    A(sc,[{transform:'translate(0,0)'},{transform:`translate(${-m}px,${m*.7}px)`},{transform:`translate(${m*.7}px,${-m*.5}px)`},{transform:'translate(0,0)'}],{duration:240,easing:'steps(4,end)'});
+    A(one,[{transform:'translate(0,0)'},{transform:`translate(${2+k}px,${-1-k}px)`},{transform:`translate(${-2-k}px,1px)`},{transform:'translate(0,0)'}],{duration:90,iterations:reduce?1:3+k*3,fill:'none',easing:'steps(2,end)'});
+    await wait(k<3?900:1300);if(!alive())return;
+  }
+  /* o 1 segue tremendo enquanto a logo surge */
+  A(one,[{transform:'translate(0,0)'},{transform:'translate(3px,-2px)'},{transform:'translate(-3px,1px)'},{transform:'translate(0,0)'}],{duration:110,iterations:reduce?1:8,fill:'none',easing:'steps(2,end)'});
+  fx.sting();
+  A(flash,[{opacity:.95},{opacity:0}],{duration:1000});
+  A(dim,[{opacity:0},{opacity:.6}],{duration:1000});
+  A(logo,[{opacity:0,transform:'scale(1.18)',filter:'blur(10px) drop-shadow(0 6px 30px #000)'},{opacity:1,transform:'scale(1)',filter:'blur(0) drop-shadow(0 6px 30px #000)'}],{duration:1000,easing:'cubic-bezier(.2,.8,.2,1)'});
+  $('#mbtns').classList.add('on');
+  playTitle();
+  const len=(isFinite(music.duration)&&music.duration>4?music.duration:13.7)*1000;
+  await wait(len);if(!alive())return;
+  /* escurece e recomeça */
+  A(dim,[{opacity:.6},{opacity:1}],{duration:900});A(logo,[{opacity:1},{opacity:0}],{duration:900});
+  await wait(1000);if(!alive())return;
+  dim.style.opacity='1';
+  intro();
+}
+/* enquadramento: em telas em pé, mostra o 0 e o 1 inteiros, com céu acima */
+function frameScene(){const w=innerWidth,h=innerHeight,sv=$('#scene');
+  if(w/h<1.3){const W=1480,H=W*h/w;sv.setAttribute('viewBox',`120 ${900-H} ${W} ${H}`)}
+  else sv.setAttribute('viewBox','0 0 1600 900')}
+frameScene();addEventListener('resize',frameScene);
+function openGate(){if($('#gate').classList.contains('off'))return;AC();$('#gate').classList.add('off');intro()}
+$('#gate').addEventListener('click',openGate);
+document.addEventListener('keydown',e=>{if(!$('#gate').classList.contains('off')){e.preventDefault();e.stopPropagation();openGate()}},true);
+
+/* ---------- navegação ---------- */
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));window.scrollTo(0,0);
+  if(id==='menu'){stopGameMusic();if($('#gate').classList.contains('off'))intro()}else{introRun++;music.pause();if(id==='game')startGameMusic();else stopGameMusic()}
+  if(id==='scores')renderScores();if(id==='setup')syncSetup()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){sfx.click();show(b.dataset.go)}});
+let mIdx=0;
+document.addEventListener('keydown',e=>{
+  if(!$('#menu').classList.contains('on')||!$('#mbtns').classList.contains('on'))return;
+  const items=$$('#mlist .btn');const k=e.key.toLowerCase();
+  if(k==='a'||k==='arrowleft'){mIdx=(mIdx+items.length-1)%items.length}
+  else if(k==='d'||k==='arrowright'){mIdx=(mIdx+1)%items.length}
+  else if(k===' '||k==='enter'){e.preventDefault();items[mIdx].click();return}
+  else return;
+  sfx.click();items.forEach((b,i)=>b.classList.toggle('sel',i===mIdx));items[mIdx].focus();
+});
+function syncSetup(){const cpu=$('input[name=mode]:checked').value==='cpu';$('#diffBox').style.display=cpu?'':'none';$('#n2f span').textContent=cpu?'Computador':'Jogador 2';if(cpu&&$('#n2').value==='Jogador 2')$('#n2').value='Computador';if(!cpu&&$('#n2').value==='Computador')$('#n2').value='Jogador 2'}
+$$('input[name=mode]').forEach(r=>r.onchange=syncSetup);
+
+/* ---------- UI utilitária ---------- */
+let toastT;
+function toast(msg){const t=$('#toast');t.innerHTML=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+function modal(title,html,buttons){
+  $('#box').innerHTML=`<h3>${title}</h3>${html}<div class="actions">${buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-mb="${i}">${b.label}</button>`).join('')}</div>`;
+  $('#ov').classList.add('on');
+  $$('#box [data-mb]').forEach(el=>el.onclick=()=>{sfx.click();$('#ov').classList.remove('on');buttons[+el.dataset.mb].fn&&buttons[+el.dataset.mb].fn()});
+  const f=$('#box [data-mb]');f&&f.focus();
+}
+
+/* ---------- estado ---------- */
+let S=null, ui={sel:[],op:null,restr:null,hint:[]}, uid=0, cpuTimer=null;
+const P=i=>S.players[i];
+const actor=()=>S.phase==='attack'?S.att:1-S.att;
+const viewer=()=>S.mode==='cpu'?0:(S.shown??actor());
+const isCpu=i=>S.mode==='cpu'&&i===1;
+
+function newGame(){
+  const mode=$('input[name=mode]:checked').value;
+  const deck=[];for(let k=0;k<2;k++)for(const d of DENS)for(const n of NUMS)deck.push({id:++uid,n,d});
+  shuffle(deck);
+  const mk=name=>({name:(name||'').trim()||'Jogador',hand:deck.splice(0,7),ops:[rOp(),rOp(),rOp()],pts:0});
+  S={mode,diff:$('input[name=diff]:checked').value,calc:$('input[name=calc]:checked').value,
+     players:[mk($('#n1').value),mk($('#n2').value)],deck,discard:[],att:Math.random()<.5?0:1,phase:'attack',
+     target:null,restr:null,last:'—',log:[],shown:null,over:false,round:1};
+  if(mode==='cpu'&&!$('#n2').value.trim())P(1).name='Computador';
+  clearSel();show('game');
+  log(`Sorteio: <b>${P(S.att).name}</b> começa atacando.`);
+  modal('Sorteio',`<p><b>${P(S.att).name}</b> começa atacando.</p>`,[{label:'Começar',cls:'red',fn:advance}]);
+}
+function clearSel(){ui={sel:[],op:null,restr:null,hint:[]}}
+function log(m){S.log.unshift(m);if(S.log.length>60)S.log.pop();$('#log').innerHTML=S.log.map(x=>`<li>${x}</li>`).join('')}
+function sortHand(p){p.hand.sort((a,b)=>a.n/a.d-b.n/b.d||a.d-b.d)}
+
+/* ---------- regras ---------- */
+function drawCard(i,why){
+  if(!S.deck.length){deckEmpty(()=>drawCard(i,why));return false}
+  const c=S.deck.pop();P(i).hand.push(c);sfx.draw();
+  log(`${P(i).name} comprou uma carta${why?` (${why})`:''}.`);
+  return true;
+}
+function deckEmpty(retry){
+  const a=P(0),b=P(1);
+  const can=a.pts>=2&&b.pts>=2&&S.discard.length>0;
+  const refill=()=>{a.pts-=2;b.pts-=2;S.deck=shuffle(S.discard.splice(0));log('O monte foi reposto com o descarte (−2 pontos de cada).');toast('Monte reposto!');retry&&retry();advance()};
+  if(!can){endGame('deck');return}
+  if(S.mode==='cpu'){
+    const cpuAgrees=b.hand.length>=a.hand.length;
+    modal('O monte acabou',`<p>Repor o monte custa <b>2 pontos de cada jogador</b>. Se não reporem, vence quem tiver menos cartas.</p><p>Você: ${a.hand.length} cartas · ${b.name}: ${b.hand.length} cartas.</p>`,
+      [{label:'Propor reposição',cls:'red',fn:()=>{if(cpuAgrees)refill();else{toast(`${b.name} recusou: está na frente.`);endGame('deck')}}},{label:'Encerrar partida',fn:()=>endGame('deck')}]);
+  }else{
+    modal('O monte acabou',`<p>Repor o monte custa <b>2 pontos de cada jogador</b>, e os dois precisam concordar. Se não reporem, vence quem tiver menos cartas.</p><p>${a.name}: ${a.hand.length} cartas · ${b.name}: ${b.hand.length} cartas.</p>`,
+      [{label:'Os dois concordam',cls:'red',fn:refill},{label:'Encerrar partida',fn:()=>endGame('deck')}]);
+  }
+}
+function doAttack(i,cardId,restr){
+  const p=P(i),k=p.hand.findIndex(c=>c.id===cardId);if(k<0)return;
+  const c=p.hand.splice(k,1)[0];
+  if(restr){p.pts-=2}
+  S.target=c;S.restr=restr||null;S.phase='defend';S.flip=true;S.draws=0;
+  S.last=`${p.name} atacou com ${sf(c)}`;
+  log(`<b>${p.name}</b> atacou com ${ft(c)}${restr?` e exigiu frações ${restr}s (−2)`:''}.`);
+  sfx.play();clearSel();advance();
+}
+/* avalia uma tentativa de defesa: retorna {ok,res,msg} */
+function evalDef(i,ids,opIdx){
+  const p=P(i),cards=ids.map(id=>p.hand.find(c=>c.id===id)).filter(Boolean),t=S.target;
+  if(!cards.length)return{ok:false,msg:'Escolha 1 fração equivalente, ou 2 frações e 1 operação.'};
+  if(cards.length===1&&opIdx!=null)return{ok:false,msg:'Para usar uma operação, escolha duas frações.'};
+  if(cards.length===2&&opIdx==null)return{ok:false,msg:'Escolha uma operação para combinar as duas frações.'};
+  if(S.restr&&cards.some(c=>tipo(c)!==S.restr))return{ok:false,msg:`O atacante exigiu só frações ${S.restr}s.`,cards};
+  const res=cards.length===1?red(cards[0].n,cards[0].d):calc(cards[0],p.ops[opIdx],cards[1]);
+  return{ok:eq(res,t),res,cards,op:opIdx!=null?p.ops[opIdx]:null};
+}
+function exprHTML(e,showRes){
+  const c=e.cards;if(!c||!c.length)return'';
+  let s=c.length===1?`${sf(c[0])}`:`${sf(c[0])} ${e.op??'?'} ${sf(c[1])}`;
+  if(showRes&&e.res)s+=` = ${sf(e.res)}`;
+  return s;
+}
+function doDefend(i,ids,opIdx){
+  const p=P(i),e=evalDef(i,ids,opIdx);
+  if(!e.ok){
+    sfx.bad();
+    if(!e.res){toast(e.msg);return}
+    if(S.calc==='desafio'&&!isCpu(i)){
+      log(`${p.name} errou a conta (${exprHTML(e,true).replace(/<[^>]+>/g,'')}) e comprou uma carta de penalidade.`);
+      toast(`Não deu: ${exprHTML(e,true)} não é ${sf(S.target)}. Penalidade: compre 1 carta.`);
+      clearSel();drawCard(i,'penalidade');advance();
+    }else toast(e.msg||'Esse valor não é equivalente à carta-objetivo.');
+    return;
+  }
+  const gain=e.cards.length===1?3:1;
+  p.pts+=gain;
+  p.hand=p.hand.filter(c=>!ids.includes(c.id));
+  if(opIdx!=null){p.ops[opIdx]=rOp()}
+  S.discard.push(S.target,...e.cards);
+  const expr=exprHTML(e,true);
+  S.last=`${p.name}: ${expr}`;
+  log(`<b>${p.name}</b> defendeu ${ft(S.target)} com ${expr.replace(/<span class="sf"><b>(\d+)<\/b><b>(\d+)<\/b><\/span>/g,'$1/$2').replace(/<[^>]+>/g,'')} (+${gain}).`);
+  toast(`${p.name} defendeu! +${gain} ponto${gain>1?'s':''}`);sfx.ok();
+  S.target=null;S.restr=null;S.att=i;S.phase='attack';S.round++;clearSel();
+  if(P(0).hand.length===0||P(1).hand.length===0){endGame('hand');return}
+  advance();
+}
+function doCounter(i,cardId){
+  const p=P(i);if(p.pts<3)return;
+  const k=p.hand.findIndex(c=>c.id===cardId);if(k<0)return;
+  const c=p.hand.splice(k,1)[0];p.pts-=3;
+  S.discard.push(S.target);
+  log(`<b>${p.name}</b> pagou 3 pontos e contra-atacou com ${ft(c)}!`);
+  S.last=`${p.name} contra-atacou com ${sf(c)}`;
+  S.target=c;S.restr=null;S.att=i;S.phase='defend';S.flip=true;S.draws=0;
+  sfx.play();toast('Contra-ataque!');clearSel();advance();
+}
+function doCede(i){
+  const at=P(S.att);at.pts+=2;S.discard.push(S.target);
+  log(`<b>${P(i).name}</b> cedeu a rodada; ${at.name} ganhou 2 pontos e ataca de novo.`);
+  S.last=`${P(i).name} cedeu ${sf(S.target)}`;toast(`${P(i).name} cedeu. ${at.name} +2 pontos.`);sfx.bad();
+  S.target=null;S.restr=null;S.phase='attack';S.round++;clearSel();
+  if(P(0).hand.length===0||P(1).hand.length===0){endGame('hand');return}
+  advance();
+}
+function solutions(i){
+  const p=P(i),t=S.target,ok=c=>!S.restr||tipo(c)===S.restr,h=p.hand.filter(ok),out=[];
+  for(const c of h)if(eq(c,t))out.push({ids:[c.id],op:null});
+  for(const a of h)for(const b of h){if(a===b)continue;
+    p.ops.forEach((o,k)=>{if(eq(calc(a,o,b),t))out.push({ids:[a.id,b.id],op:k})})}
+  return out;
+}
+/* jogadas distintas: + e × não dependem da ordem; operações repetidas contam uma vez */
+function countPlays(i){
+  const p=P(i),seen=new Set();
+  for(const s of solutions(i)){
+    if(s.ids.length===1){seen.add('c'+s.ids[0]);continue}
+    const o=p.ops[s.op],ids=(o==='+'||o==='×')?[...s.ids].sort((a,b)=>a-b):s.ids;
+    seen.add(o+ids.join(','));
+  }
+  return seen.size;
+}
+function endGame(why){
+  S.over=true;clearTimeout(cpuTimer);
+  const [a,b]=S.players;let w;
+  if(a.hand.length!==b.hand.length)w=a.hand.length<b.hand.length?0:1;
+  else if(a.pts!==b.pts)w=a.pts>b.pts?0:1;
+  else w=-1;
+  const reason=why==='hand'?'zerou a mão':'tem menos cartas com o fim do monte';
+  const title=w<0?'Empate':`${P(w).name} venceu`;
+  try{const h=JSON.parse(localStorage.getItem('divisa-hist')||'[]');
+    h.unshift({d:new Date().toLocaleDateString('pt-BR'),m:S.mode==='cpu'?`CPU (${S.diff})`:'2 jogadores',a:a.name,b:b.name,ac:a.hand.length,bc:b.hand.length,ap:a.pts,bp:b.pts,w:w<0?'Empate':P(w).name,r:S.round});
+    localStorage.setItem('divisa-hist',JSON.stringify(h.slice(0,30)))}catch(e){}
+  render();w>=0&&(!isCpu(w))?sfx.ok():sfx.bad();
+  modal(title,`<p>${w<0?'Mesmo número de cartas e de pontos.':`${P(w).name} ${reason}${a.hand.length===b.hand.length?' (desempate por pontos)':''}.`}</p>
+    <table><thead><tr><th>Jogador</th><th class="n">Cartas</th><th class="n">Pontos</th></tr></thead><tbody>
+    ${S.players.map(p=>`<tr><td>${p.name}</td><td class="n">${p.hand.length}</td><td class="n">${p.pts}</td></tr>`).join('')}</tbody></table>
+    <p class="hint">${S.round-1} rodada(s) concluída(s).</p>`,
+    [{label:'Jogar de novo',cls:'red',fn:newGame},{label:'Menu',fn:()=>show('menu')}]);
+}
+
+/* ---------- fluxo ---------- */
+function advance(){
+  if(S.over)return;
+  const a=actor();
+  if(S.mode==='2p'&&S.shown!==a){
+    S.shown=null;render();
+    modal('Passe a vez',`<p>Entregue o aparelho para <b>${P(a).name}</b>.</p><p class="hint">${S.phase==='attack'?'É a vez de atacar.':`É a vez de defender ${sf(S.target)}.`}</p>`,
+      [{label:`Sou ${P(a).name}`,cls:'red',fn:()=>{S.shown=a;render()}}]);
+    return;
+  }
+  render();
+  if(isCpu(a)){clearTimeout(cpuTimer);cpuTimer=setTimeout(cpuAct,1100)}
+}
+function cpuAct(){
+  if(S.over||!isCpu(actor()))return;
+  const me=1,p=P(me);
+  if(S.phase==='attack'){
+    let pick;
+    if(S.diff==='facil')pick=p.hand[Math.random()*p.hand.length|0];
+    else pick=p.hand.map(c=>({c,s:red(c.n,c.d).d+(c.n>=c.d?1.5:0)+Math.random()*2})).sort((x,y)=>y.s-x.s)[0].c;
+    let restr=null;
+    if(S.diff!=='facil'&&p.pts>=4&&Math.random()<.35)restr=Math.random()<.5?'própria':'imprópria';
+    doAttack(me,pick.id,restr);return;
+  }
+  const miss={facil:.45,medio:.15,dificil:0}[S.diff];
+  let sols=solutions(me).filter(s=>s.ids.length===1||Math.random()>=miss);
+  if(sols.length){sols.sort((x,y)=>x.ids.length-y.ids.length);doDefend(me,sols[0].ids,sols[0].op);return}
+  if(p.pts>=3&&p.hand.length&&(S.diff==='dificil'||(S.diff==='medio'&&Math.random()<.5))){
+    const c=p.hand.map(c=>({c,s:red(c.n,c.d).d+Math.random()})).sort((x,y)=>y.s-x.s)[0].c;
+    doCounter(me,c.id);return;
+  }
+  if(S.draws>=MAXDRAW){doCede(me);return}
+  S.draws++;if(drawCard(me))advance();
+}
+
+/* ---------- render ---------- */
+function fracCard(c,{sel=0,dis=false,hint=false,big=false,target=false,flip=false}={}){
+  return `<button class="card${big?' big':''}${sel?' sel':''}${hint?' hint':''}${target?' target':''}${flip?' flip':''}" data-id="${c.id}" ${dis?'disabled':''} aria-label="${c.n} sobre ${c.d}">
+    <span class="t">${tipo(c)}</span><span class="fr"><span>${c.n}</span><i></i><span>${c.d}</span></span>${sel?`<span class="ord">${sel}</span>`:''}</button>`;
+}
+function seatHead(i,mine){
+  const p=P(i),a=actor()===i,role=S.att===i?'<span class="role att">atacante</span>':'<span class="role">defensor</span>';
+  return `<div class="who"><b>${p.name}</b><span>${p.hand.length} cartas</span></div>${role}<span class="pts">${p.pts} pts</span>${a&&!S.over?`<span class="hint">${isCpu(i)?'pensando…':'na vez'}</span>`:''}`;
+}
+function render(){
+  if(!S)return;
+  const v=viewer(),o=1-v,me=P(v),opp=P(o),a=actor();
+  const hidden=S.mode==='2p'&&S.shown==null;
+  const myTurn=!hidden&&!S.over&&a===v&&!isCpu(v);
+  /* adversário */
+  $('#oppSeat').className='seat'+(a===o?' act':'');
+  $('#oppSeat').innerHTML=seatHead(o)+`<div class="backs">${opp.hand.slice(0,14).map(()=>'<span class="minib"></span>').join('')}${opp.hand.length>14?`<span class="hint">+${opp.hand.length-14}</span>`:''}</div>`;
+  /* mesa */
+  $('#deck').innerHTML=S.deck.length?[0,1,2].slice(0,Math.min(3,S.deck.length)).map(k=>`<div class="card back" style="transform:translate(${k*2}px,${-k*2}px)"></div>`).join(''):'<div class="card empty">vazio</div>';
+  $('#deckN').textContent=`${S.deck.length} cartas`;
+  $('#target').innerHTML=S.target?fracCard(S.target,{big:true,target:true,dis:true,flip:S.flip}):'<div class="card big empty">aguardando ataque</div>';
+  S.flip=false;
+  $('#restr').innerHTML=S.restr?`<span class="restr">só ${S.restr}s</span>`:'';
+  $('#last').innerHTML=S.last;
+  /* status */
+  let st='';
+  if(S.over)st='Partida encerrada.';
+  else if(hidden)st=`Aguardando <b>${P(a).name}</b>…`;
+  else if(S.phase==='attack')st=a===v&&!isCpu(v)?'<b>Sua vez de atacar:</b> escolha a fração que será a carta-objetivo.':`<b>${P(a).name}</b> está escolhendo o ataque…`;
+  else st=a===v&&!isCpu(v)?`<b>Defenda ${sf(S.target)}</b> com 1 fração equivalente, ou 2 frações e 1 operação.`:`<b>${P(a).name}</b> está defendendo…`;
+  $('#status').innerHTML=st;
+  /* minha mão */
+  $('#mySeat').className='seat'+(a===v?' act':'');
+  $('#myHead').innerHTML=seatHead(v,true);
+  sortHand(me);
+  if(hidden){$('#hand').innerHTML=me.hand.map(()=>'<div class="card back"></div>').join('');$('#ops').innerHTML=me.ops.map(()=>'<div class="card op back"></div>').join('');$('#preview').innerHTML='';$('#preview').className='preview';$('#actions').innerHTML='';$('#plays').className='plays';return}
+  $('#hand').innerHTML=me.hand.map(c=>fracCard(c,{sel:ui.sel.indexOf(c.id)+1,dis:!myTurn,hint:ui.hint.includes(c.id)})).join('')||'<span class="hint">mão vazia</span>';
+  const defending=myTurn&&S.phase==='defend';
+  $('#ops').innerHTML=me.ops.map((o,k)=>`<button class="card op${ui.op===k?' sel':''}${ui.hintOp===k?' hint':''}" data-op="${k}" ${defending?'':'disabled'} aria-label="operação ${o}">${o}</button>`).join('');
+  /* prévia + ações */
+  const pv=$('#preview');pv.className='preview';pv.innerHTML='';
+  const pl=$('#plays');pl.className='plays';pl.innerHTML='';
+  let acts='',noPlay=false;
+  if(myTurn&&S.phase==='attack'){
+    const c=me.hand.find(x=>x.id===ui.sel[0]);
+    pv.innerHTML=c?`Atacar com ${sf(c)}${ui.restr?` exigindo frações <b>${ui.restr}s</b> (−2 pts)`:''}`:'<span class="hint">Toque numa fração da sua mão.</span>';
+    const r=x=>`<button class="btn sm${ui.restr===x?' red':''}" data-restr="${x}" ${me.pts<2?'disabled':''}>Exigir ${x}s · 2 pts</button>`;
+    acts=`<button class="btn red" data-act="attack" ${c?'':'disabled'}>Atacar</button>${r('própria')}${r('imprópria')}`;
+  }else if(defending){
+    const n=countPlays(v);noPlay=n===0;
+    pl.className='plays on'+(noPlay?' zero':'');
+    if(n>0)pl.innerHTML=`Você tem <b>${n}</b> jogada${n>1?'s':''} possíve${n>1?'is':'l'} com sua mão${S.restr?` (só frações ${S.restr}s)`:''}.`;
+    else if(S.draws<MAXDRAW&&(S.deck.length||S.discard.length))pl.innerHTML=`<b>Nenhuma jogada possível.</b> Compre uma carta${me.pts>=3?' ou contra-ataque (3 pts)':''}.`;
+    else if(S.draws<MAXDRAW)pl.innerHTML='<b>Nenhuma jogada possível</b> e o monte acabou. Compre para decidir se ele será reposto.';
+    else pl.innerHTML=`<b>Nenhuma jogada possível</b> e você já comprou ${MAXDRAW} cartas nesta rodada. Ceda a rodada${me.pts>=3?' ou contra-ataque (3 pts)':''}.`;
+    const e=evalDef(v,ui.sel,ui.op);
+    if(ui.sel.length){
+      const assist=S.calc==='assist';
+      pv.innerHTML=exprHTML(e,assist&&!!e.res)+(e.res&&assist?(e.ok?' <b style="color:#4caf50">✓ equivalente</b>':` <span class="hint">≠ ${sf(S.target)}</span>`):'')+(e.msg&&!e.res?` <span class="hint">${e.msg}</span>`:'');
+      if(assist&&e.res)pv.className='preview '+(e.ok?'ok':'bad');
+    }else pv.innerHTML='<span class="hint">Escolha as cartas. A ordem dos cliques é a ordem da conta.</span>';
+    const canDef=S.calc==='assist'?e.ok:!!e.res;
+    acts=`<button class="btn red" data-act="defend" ${canDef?'':'disabled'}>Defender</button>
+      ${S.draws>=MAXDRAW?`<button class="btn${noPlay?' red call':''}" data-act="cede">Ceder a rodada</button>`:`<button class="btn${noPlay?' red call':''}" data-act="draw">Comprar carta · ${MAXDRAW-S.draws} restam</button>`}
+      ${ui.sel.length===2?'<button class="btn sm" data-act="swap">Inverter ordem</button>':''}
+      <button class="btn sm" data-act="counter" ${me.pts>=3&&ui.sel.length===1&&ui.op==null?'':'disabled'} title="Selecione 1 fração para virar a nova carta-objetivo">Contra-atacar · 3 pts</button>
+      <button class="btn sm" data-act="hint" ${me.pts>=1?'':'disabled'}>Dica · 1 pt</button>
+      ${ui.sel.length||ui.op!=null?'<button class="btn sm" data-act="clear">Limpar</button>':''}`;
+  }
+  $('#actions').innerHTML=acts;
+}
+
+/* ---------- eventos do jogo ---------- */
+$('#game').addEventListener('click',e=>{
+  if(!S||S.over)return;
+  const v=viewer();if(actor()!==v||isCpu(v))return;
+  const card=e.target.closest('#hand .card[data-id]'),op=e.target.closest('#ops [data-op]'),act=e.target.closest('[data-act]'),rs=e.target.closest('[data-restr]');
+  if(card){const id=+card.dataset.id;sfx.click();ui.hint=[];ui.hintOp=null;
+    if(S.phase==='attack')ui.sel=ui.sel[0]===id?[]:[id];
+    else{const k=ui.sel.indexOf(id);if(k>=0)ui.sel.splice(k,1);else{if(ui.sel.length===2)ui.sel.pop();ui.sel.push(id)}}
+    render();return}
+  if(op){sfx.click();const k=+op.dataset.op;ui.op=ui.op===k?null:k;ui.hintOp=null;render();return}
+  if(rs){sfx.click();ui.restr=ui.restr===rs.dataset.restr?null:rs.dataset.restr;render();return}
+  if(!act)return;
+  const a=act.dataset.act;
+  if(a==='attack')doAttack(v,ui.sel[0],ui.restr);
+  else if(a==='defend')doDefend(v,[...ui.sel],ui.op);
+  else if(a==='draw'){if(S.draws>=MAXDRAW)return;clearSel();S.draws++;if(drawCard(v))render()}
+  else if(a==='cede')doCede(v);
+  else if(a==='swap'){ui.sel.reverse();render()}
+  else if(a==='clear'){clearSel();render()}
+  else if(a==='counter')doCounter(v,ui.sel[0]);
+  else if(a==='hint'){
+    P(v).pts-=1;const sols=solutions(v);
+    if(!sols.length){toast('Nenhuma defesa possível com sua mão. Compre uma carta (ou contra-ataque).');log(`${P(v).name} pediu dica: sem defesa possível.`)}
+    else{sols.sort((x,y)=>x.ids.length-y.ids.length);const s=sols[0];ui.sel=[];ui.op=null;ui.hint=s.ids;ui.hintOp=s.op;toast(s.ids.length===1?'Há uma fração equivalente na sua mão!':'Há uma combinação: veja as cartas piscando.');log(`${P(v).name} pediu uma dica (−1).`)}
+    render();
+  }
+});
+$('#quit').onclick=()=>modal('Sair da partida?','<p>O progresso desta partida será perdido.</p>',[{label:'Sair',cls:'red',fn:()=>{if(S){S.over=true;clearTimeout(cpuTimer)}show('menu')}},{label:'Continuar'}]);
+$('#rulesIn').onclick=()=>modal('Resumo das regras',`<p style="text-align:left">Defenda a carta-objetivo com <b>1 fração equivalente (+3)</b> ou <b>2 frações e 1 operação (+1)</b>. Se não conseguir, compre até 3 cartas; depois disso, ceda (atacante +2).<br><br>Atacante pode exigir próprias ou impróprias (−2). Defensor pode contra-atacar com uma fração nova (−3).<br><br>Vence quem zerar a mão. Se o monte acabar, vence quem tiver menos cartas.</p>`,[{label:'Voltar ao jogo',cls:'red'}]);
+$('#startBtn').onclick=()=>{sfx.click();newGame()};
+
+/* ---------- pontuação ---------- */
+function renderScores(){
+  let h=[];try{h=JSON.parse(localStorage.getItem('divisa-hist')||'[]')}catch(e){}
+  if(!h.length){$('#scoreBody').innerHTML='<p>Nenhuma partida registrada ainda. Jogue uma!</p>';return}
+  const wins={};h.forEach(x=>{if(x.w!=='Empate')wins[x.w]=(wins[x.w]||0)+1});
+  $('#scoreBody').innerHTML=`<h2>Vitórias</h2><table><tbody>${Object.entries(wins).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`<tr><td>${n}</td><td class="n">${c}</td></tr>`).join('')}</tbody></table>
+  <h2>Últimas partidas</h2><div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Modo</th><th>Partida</th><th>Vencedor</th></tr></thead><tbody>
+  ${h.map(x=>`<tr><td>${x.d}</td><td>${x.m}</td><td>${x.a} (${x.ac} cartas, ${x.ap} pts) × ${x.b} (${x.bc} cartas, ${x.bp} pts)</td><td>${x.w}</td></tr>`).join('')}</tbody></table></div>`;
+}
+$('#clearHist').onclick=()=>{try{localStorage.removeItem('divisa-hist')}catch(e){}renderScores()};
+window.__divisa={get S(){return S},solutions,calc,eq,red};
+}
+</script>
+</body>
+</html>
