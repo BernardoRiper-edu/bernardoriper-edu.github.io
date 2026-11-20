@@ -655,3 +655,16 @@ main:has(> .cta:last-child, > div:last-child > .cta:last-child) + .site-footer {
 .contact-list span { display: flex; flex-direction: column; min-width: 0; }
 .contact-list strong { font-family: var(--display); font-stretch: 90%; font-weight: 700; font-size: 1.25rem; }
 .contact-list small { color: var(--muted); font-size: 0.95rem; overflow-wrap: anywhere; }
+
+/* contatos no corpo das páginas */
+.cta-contacts {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+  margin-top: 28px; padding-top: 20px;
+  border-top: 1px solid color-mix(in srgb, #fff 25%, var(--ink));
+}
+.cta-contacts p { margin: 0; font-weight: 700; color: #fff; }
+.cta .contact-links a { color: #fff; }
+.cta .contact-links .icon { color: var(--hl); }
+.booking-contacts { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--rule); }
+.booking-contacts p { margin: 0 0 10px; font-weight: 700; }
+.booking-contacts .contact-links { flex-direction: column; gap: 10px; }
