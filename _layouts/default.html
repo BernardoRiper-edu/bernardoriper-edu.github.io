@@ -11,6 +11,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% seo %}
+  <link rel="icon" href="{{ '/assets/icons/favicon.svg' | relative_url }}" type="image/svg+xml">
+  <link rel="icon" href="{{ '/assets/icons/favicon-32.png' | relative_url }}" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="{{ '/assets/icons/apple-touch-icon.png' | relative_url }}">
+  <link rel="manifest" href="{{ '/site.webmanifest' | relative_url }}">
+  {%- comment -%} Imagem de prévia (WhatsApp, redes sociais). Artigos com capa usam a própria capa;
+      a área da escola fica sem a prévia das aulas particulares. {%- endcomment -%}
+  {% unless area_escola or page.image %}
+  <meta property="og:image" content="{{ '/assets/img/og-image.png' | absolute_url }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Bernardo Riper, professor: aulas particulares de IB, IGCSE, SAT e ENEM">
+  <meta name="twitter:image" content="{{ '/assets/img/og-image.png' | absolute_url }}">
+  {% endunless %}
   <link rel="preload" href="{{ '/assets/fonts/bricolage.woff2' | relative_url }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% include paleta-escola.html %}
