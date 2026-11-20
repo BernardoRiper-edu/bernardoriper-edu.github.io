@@ -135,7 +135,14 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
           {% endif %}
         </div>
         <div class="game-body">
-          <h3>{{ j.titulo }}</h3>
+          <div class="game-title">
+            <h3>{{ j.titulo }}</h3>
+            {% for modo in j.modos %}
+              {% if modo == "single" %}<span class="mode mode-single">Single-player</span>
+              {% elsif modo == "local" %}<span class="mode mode-local" title="Duas pessoas no mesmo aparelho">Multiplayer local</span>
+              {% elsif modo == "online" %}<span class="mode mode-online" title="Cada aluno joga no próprio aparelho, todos na mesma partida">Multiplayer online</span>{% endif %}
+            {% endfor %}
+          </div>
           {% if j.descricao %}<p>{{ j.descricao }}</p>{% endif %}
         </div>
       </a>
