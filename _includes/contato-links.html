@@ -1,7 +1,7 @@
 <ul class="contact-links">
-  {% if site.whatsapp != "" and site.whatsapp %}<li><a href="https://wa.me/{{ site.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a></li>{% endif %}
-  {% if site.email != "" and site.email %}<li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>{% endif %}
-  {% if site.instagram != "" and site.instagram %}<li><a href="https://instagram.com/{{ site.instagram }}" target="_blank" rel="noopener">Instagram</a></li>{% endif %}
-  {% if site.linkedin != "" and site.linkedin %}<li><a href="{{ site.linkedin }}" target="_blank" rel="noopener">LinkedIn</a></li>{% endif %}
-  <li><a href="{{ '/contato/' | relative_url }}">Contato</a></li>
+  {% if site.whatsapp != "" and site.whatsapp %}<li><a href="https://wa.me/{{ site.whatsapp }}" target="_blank" rel="noopener">{% include icone.html nome="conversa" %}<span>WhatsApp {% include whatsapp-numero.html %}</span></a></li>{% endif %}
+  {% if site.email != "" and site.email %}<li><a href="mailto:{{ site.email }}">{% include icone.html nome="email" %}<span>{{ site.email }}</span></a></li>{% endif %}
+  <li><a href="{{ site.calendly_url }}" target="_blank" rel="noopener" data-agendar>{% include icone.html nome="calendario" %}<span>Agendar pelo Calendly</span></a></li>
+  {% if site.instagram != "" and site.instagram %}<li><a href="https://instagram.com/{{ site.instagram }}" target="_blank" rel="noopener">{% include icone.html nome="instagram" %}<span>Instagram</span></a></li>{% endif %}
+  {% if site.linkedin != "" and site.linkedin %}<li><a href="{{ site.linkedin }}" target="_blank" rel="noopener">{% include icone.html nome="link" %}<span>LinkedIn</span></a></li>{% endif %}
 </ul>

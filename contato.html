@@ -14,11 +14,29 @@ description: "Fale com o professor Bernardo Riper ou agende uma aula."
 </section>
 
 <section class="wrap block">
-  <ul class="link-list big">
-    {% if site.whatsapp != "" and site.whatsapp %}<li><a href="https://wa.me/{{ site.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a></li>{% endif %}
-    {% if site.email != "" and site.email %}<li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>{% endif %}
-    {% if site.instagram != "" and site.instagram %}<li><a href="https://instagram.com/{{ site.instagram }}" target="_blank" rel="noopener">@{{ site.instagram }}</a></li>{% endif %}
-    {% if site.linkedin != "" and site.linkedin %}<li><a href="{{ site.linkedin }}" target="_blank" rel="noopener">LinkedIn</a></li>{% endif %}
-    <li><a href="{{ site.calendly_url }}" target="_blank" rel="noopener">Calendário (Calendly)</a></li>
+  <ul class="contact-list">
+    {% if site.whatsapp != "" and site.whatsapp %}
+    <li><a href="https://wa.me/{{ site.whatsapp }}" target="_blank" rel="noopener">
+      {% include icone.html nome="conversa" %}
+      <span><strong>WhatsApp</strong><small>{% include whatsapp-numero.html %}</small></span></a></li>
+    {% endif %}
+    {% if site.email != "" and site.email %}
+    <li><a href="mailto:{{ site.email }}">
+      {% include icone.html nome="email" %}
+      <span><strong>E-mail</strong><small>{{ site.email }}</small></span></a></li>
+    {% endif %}
+    <li><a href="{{ site.calendly_url }}" target="_blank" rel="noopener" data-agendar>
+      {% include icone.html nome="calendario" %}
+      <span><strong>Calendly</strong><small>Escolha um horário para a primeira aula</small></span></a></li>
+    {% if site.instagram != "" and site.instagram %}
+    <li><a href="https://instagram.com/{{ site.instagram }}" target="_blank" rel="noopener">
+      {% include icone.html nome="instagram" %}
+      <span><strong>Instagram</strong><small>@{{ site.instagram }}</small></span></a></li>
+    {% endif %}
+    {% if site.linkedin != "" and site.linkedin %}
+    <li><a href="{{ site.linkedin }}" target="_blank" rel="noopener">
+      {% include icone.html nome="link" %}
+      <span><strong>LinkedIn</strong><small>Perfil profissional</small></span></a></li>
+    {% endif %}
   </ul>
 </section>
