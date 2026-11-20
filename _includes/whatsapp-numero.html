@@ -1,0 +1,5 @@
+{%- comment -%} Mostra o WhatsApp de _config.yml no formato (21) 98542-7025 {%- endcomment -%}
+{%- assign w = site.whatsapp | append: "" -%}
+{%- if w.size == 13 -%}({{ w | slice: 2, 2 }}) {{ w | slice: 4, 5 }}-{{ w | slice: 9, 4 }}
+{%- elsif w.size == 12 -%}({{ w | slice: 2, 2 }}) {{ w | slice: 4, 4 }}-{{ w | slice: 8, 4 }}
+{%- else -%}{{ w }}{%- endif -%}

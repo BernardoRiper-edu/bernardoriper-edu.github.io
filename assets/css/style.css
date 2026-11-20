@@ -436,7 +436,7 @@ main:has(> .cta:last-child, > div:last-child > .cta:last-child) + .site-footer {
   .page-hero { padding: 40px 0 36px; }
 }
 @media (max-width: 520px) {
-  .wrap { padding: 0 18px; }
+  .wrap { padding-left: 18px; padding-right: 18px; }
   .mosaic { grid-template-columns: 1fr; grid-auto-rows: auto; }
   .card-body { min-height: 150px; }
   .card-wide, .card-big, .card-tall { grid-column: span 1; grid-row: span 1; }
@@ -631,3 +631,27 @@ main:has(> .cta:last-child, > div:last-child > .cta:last-child) + .site-footer {
 .mode-online { background: var(--ink); border-color: var(--ink); color: #fff; }
 .mode-local { background: color-mix(in srgb, var(--ink) 10%, var(--paper)); border-color: color-mix(in srgb, var(--ink) 35%, var(--paper)); color: var(--ink); }
 .game:hover .game-title h3 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+/* ---------- ícones de contato ---------- */
+.icon { flex-shrink: 0; display: block; }
+.btn-icon { display: inline-flex; align-items: center; gap: 8px; }
+.btn-icon .icon { width: 1.15em; height: 1.15em; }
+.contact-links a { display: inline-flex; align-items: center; gap: 7px; }
+.contact-links .icon { width: 18px; height: 18px; color: var(--ink); }
+.cta .contact-links .icon { color: inherit; }
+
+.contact-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; }
+.contact-list a {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+  padding: 18px 20px; color: var(--text); text-decoration: none; height: 100%;
+}
+.contact-list a:hover { border-color: var(--text); }
+.contact-list a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.contact-list .icon {
+  width: 46px; height: 46px; padding: 11px; border-radius: 50%;
+  background: var(--hl); color: var(--text); box-sizing: border-box;
+}
+.contact-list span { display: flex; flex-direction: column; min-width: 0; }
+.contact-list strong { font-family: var(--display); font-stretch: 90%; font-weight: 700; font-size: 1.25rem; }
+.contact-list small { color: var(--muted); font-size: 0.95rem; overflow-wrap: anywhere; }
