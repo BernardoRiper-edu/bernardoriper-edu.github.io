@@ -619,3 +619,15 @@ main:has(> .cta:last-child, > div:last-child > .cta:last-child) + .site-footer {
   .mat-link { padding: 6px 10px; }
 }
 .game-media img.contain { object-fit: contain; }
+
+/* pílulas de modo de jogo */
+.game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 0.4em; }
+.game-title h3 { margin: 0 4px 0 0; }
+.mode {
+  font-size: 0.75rem; font-weight: 700; line-height: 1;
+  padding: 5px 9px; border-radius: 999px; white-space: nowrap;
+  border: 1px solid var(--rule); color: var(--text); background: var(--page);
+}
+.mode-online { background: var(--ink); border-color: var(--ink); color: #fff; }
+.mode-local { background: color-mix(in srgb, var(--ink) 10%, var(--paper)); border-color: color-mix(in srgb, var(--ink) 35%, var(--paper)); color: var(--ink); }
+.game:hover .game-title h3 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }

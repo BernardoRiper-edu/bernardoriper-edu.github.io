@@ -6,20 +6,25 @@
 #   2. Coloque o GIF em assets/jogos/<nome-do-jogo>.gif
 #   3. Acrescente um item abaixo
 # Enquanto "gif" estiver vazio (ou o arquivo não existir), aparece um quadro provisório no lugar.
+# modos: lista com um ou mais de: single (Single-player), local (Multiplayer na mesma tela),
+#        online (Multiplayer online). Vira as pílulas ao lado do nome do jogo.
 # Opcional: gif_fundo: "#000000" mostra o GIF inteiro (sem cortar as bordas) sobre essa cor.
 
 - titulo: "Lago Koi"
   descricao: "Lago multiplayer: cada aluno controla uma carpa, alimenta o peixe e foge do bagre gigante."
   url: /escola/jogos/lago-koi/
+  modos: [online]
   gif: /assets/jogos/lago-koi.gif
 
 - titulo: "Koi Algebra"
   descricao: "Simplifique expressões juntando termos semelhantes para alimentar sua carpa. Errou? A isca pesada atrai o bagre gigante."
   url: /escola/jogos/koi-algebra/
+  modos: [online]
   gif: /assets/jogos/koi-algebra.gif
 
 - titulo: "DivisA"
   descricao: "Duelo de frações para dois jogadores: um ataca com uma fração e o outro defende chegando ao mesmo valor com as cartas da mão."
   url: /escola/jogos/divisa/
+  modos: [single, local]
   gif: /assets/jogos/divisa.gif
   gif_fundo: "#000000"
