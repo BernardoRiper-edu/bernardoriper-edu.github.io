@@ -1,6 +1,6 @@
 ---
 layout: programa
 programa: sat
-title: "Aulas de SAT — Bernardo Riper"
+title: "SAT"
 permalink: /sat/
 ---

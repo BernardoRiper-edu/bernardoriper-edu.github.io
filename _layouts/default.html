@@ -10,7 +10,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% seo %}
+  {%- comment -%}
+    Título da aba. Fora da escola: "Página | Bernardo Riper" (início: "Bernardo Riper | Aulas de …").
+    Na área da escola: "TBS | Materiais e jogos" e "Aviso | TBS" (a sigla vem de _data/escola.yml).
+  {%- endcomment -%}
+  {%- assign sigla = site.data.escola.sigla -%}
+  <title>
+    {%- if area_escola -%}
+      {%- if page.escola -%}{{ sigla }} | Materiais e jogos{%- else -%}{{ page.title }} | {{ sigla }}{%- endif -%}
+    {%- elsif page.url == "/" or page.url == "/index.html" -%}{{ site.title }} | {{ page.title | default: "Aulas de IB, IGCSE, SAT e ENEM" }}
+    {%- elsif page.title -%}{{ page.title }} | {{ site.title }}
+    {%- else -%}{{ site.title }}{%- endif -%}
+  </title>
+  {% seo title=false %}
   <link rel="icon" href="{{ '/assets/icons/favicon.svg' | relative_url }}" type="image/svg+xml">
   <link rel="icon" href="{{ '/assets/icons/favicon-32.png' | relative_url }}" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="{{ '/assets/icons/apple-touch-icon.png' | relative_url }}">
