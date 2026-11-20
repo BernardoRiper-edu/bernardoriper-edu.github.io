@@ -1,6 +1,6 @@
 ---
 layout: programa
 programa: ib
-title: "Aulas de IB Diploma Programme — Bernardo Riper"
+title: "IB"
 permalink: /ib/
 ---

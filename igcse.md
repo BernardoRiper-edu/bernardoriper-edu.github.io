@@ -1,6 +1,6 @@
 ---
 layout: programa
 programa: igcse
-title: "Aulas de IGCSE — Bernardo Riper"
+title: "IGCSE"
 permalink: /igcse/
 ---

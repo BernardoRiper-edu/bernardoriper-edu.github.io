@@ -1,6 +1,6 @@
 ---
 layout: programa
 programa: enem
-title: "Aulas de ENEM — Bernardo Riper"
+title: "ENEM"
 permalink: /enem/
 ---
