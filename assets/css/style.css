@@ -618,3 +618,4 @@ main:has(> .cta:last-child, > div:last-child > .cta:last-child) + .site-footer {
   .mat-head h2 { font-size: 1.1rem; }
   .mat-link { padding: 6px 10px; }
 }
+.game-media img.contain { object-fit: contain; }
