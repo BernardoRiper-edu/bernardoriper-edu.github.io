@@ -11,6 +11,7 @@ Site de professor (Jekyll + GitHub Pages).
 | **Escola atual** (nome, sigla, paleta de 5 cores, anos, plantão, links úteis) | `_data/escola.yml` |
 | **Materiais por ano** (PDFs dos alunos) | `assets/materiais/<ano>/<tipo>/` — ex.: `assets/materiais/Y9/lista/Lista 03.pdf` |
 | Como funciona / formatos / investimento / FAQ | `aulas.html` |
+| Ferramentas de ensino (página da escola) | `_data/ferramentas.yml` + HTML em `escola/ferramentas/<ferramenta>/` + imagem de capa em `assets/ferramentas/` |
 | Jogos interativos (página da escola) | `_data/jogos.yml` + HTML em `escola/jogos/<jogo>/` + GIF em `assets/jogos/` |
 
 ## Páginas

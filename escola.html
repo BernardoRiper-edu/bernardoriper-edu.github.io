@@ -122,6 +122,28 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
   </section>
 </div>
 
+{% if site.data.ferramentas and site.data.ferramentas.size > 0 %}
+<section class="wrap block">
+  <div class="block-head"><h2>Ferramentas de Ensino</h2></div>
+  <div class="games">
+    {% for f in site.data.ferramentas %}
+      <a class="game" href="{{ f.url | relative_url }}" target="_blank" rel="noopener">
+        <div class="game-media">
+          <span class="game-placeholder" aria-hidden="true">{{ f.titulo }}</span>
+          {% if f.imagem != "" and f.imagem %}
+            <img src="{{ f.imagem | relative_url }}" alt="Capa da ferramenta {{ f.titulo }}" loading="lazy" onerror="this.remove()"{% if f.imagem_fundo %} class="contain" style="background:{{ f.imagem_fundo }}"{% endif %}>
+          {% endif %}
+        </div>
+        <div class="game-body">
+          <div class="game-title"><h3>{{ f.titulo }}</h3></div>
+          {% if f.descricao %}<p>{{ f.descricao }}</p>{% endif %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
 {% if site.data.jogos and site.data.jogos.size > 0 %}
 <section class="wrap block">
   <div class="block-head"><h2>Jogos interativos</h2></div>
