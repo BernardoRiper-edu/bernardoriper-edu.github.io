@@ -1,0 +1,14 @@
+# Ferramentas de ensino — aparecem na página da escola, logo acima de "Jogos interativos".
+# Ficam fora de escola.yml para não se perderem quando você trocar de colégio.
+#
+# Para adicionar uma ferramenta:
+#   1. Coloque o HTML em escola/ferramentas/<nome-da-ferramenta>/index.html
+#   2. Coloque a imagem de capa (16:10, ex.: 1600x1000) em assets/ferramentas/<nome-da-ferramenta>.jpg
+#   3. Acrescente um item abaixo
+# Enquanto "imagem" estiver vazia (ou o arquivo não existir), aparece um quadro provisório no lugar.
+# Opcional: imagem_fundo: "#000000" mostra a imagem inteira (sem cortar as bordas) sobre essa cor.
+
+- titulo: "SolidView"
+  descricao: "Monte sólidos geométricos em 3D, ajuste as dimensões e veja faces, arestas, vértices, área e volume. Abra a planificação de cada sólido com uma animação."
+  url: /escola/ferramentas/solidview/
+  imagem: /assets/ferramentas/solidview.jpg

@@ -1,0 +1,3310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolidView — Sólidos Geométricos 3D</title>
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.78);
+      --border: rgba(148, 163, 184, 0.2);
+      --border-strong: rgba(56, 189, 248, 0.55);
+      --cyan: #38bdf8;
+      --indigo: #818cf8;
+      --emerald: #34d399;
+      --rose: #fb7185;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --sidebar-w: 328px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0f172a;
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 62% 40%, #16223d 0%, #0f172a 68%, #070d1a 100%);
+    }
+
+    /* ==================== LEFT SIDEBAR ==================== */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      max-width: var(--sidebar-w);
+      height: 100%;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
+      box-shadow: 10px 0 30px -10px rgba(2, 6, 23, 0.75);
+      transition: transform 0.25s ease;
+    }
+
+    .sidebar-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 14, 28, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(129, 140, 248, 0.22));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .count-badge {
+      font-size: 11px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #c7d2fe;
+      background: rgba(129, 140, 248, 0.16);
+      border: 1px solid rgba(129, 140, 248, 0.35);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+    }
+
+    .sidebar-body::-webkit-scrollbar,
+    .library-subwindow::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .sidebar-body::-webkit-scrollbar-thumb,
+    .library-subwindow::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 999px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .link-btn:hover {
+      color: var(--cyan);
+    }
+
+    /* Segmented Toggle Controls */
+    .seg-control {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 3px;
+      background: rgba(9, 14, 28, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 9px;
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seg-btn:hover {
+      color: #ffffff;
+    }
+
+    .seg-btn.active {
+      background: var(--cyan);
+      color: #0b1120;
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+    }
+
+    .seg-btn.active-indigo {
+      background: var(--indigo);
+      color: #0b1120;
+      box-shadow: 0 2px 8px rgba(129, 140, 248, 0.3);
+    }
+
+    .seg-btn.active-emerald {
+      background: var(--emerald);
+      color: #052e16;
+      box-shadow: 0 2px 8px rgba(52, 211, 153, 0.35);
+    }
+
+    /* Category Pills */
+    .cat-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .cat-pill {
+      border: 1px solid transparent;
+      background: rgba(15, 23, 42, 0.78);
+      color: var(--text-muted);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 4px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .cat-pill:hover {
+      color: #ffffff;
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+
+    .cat-pill.active {
+      background: rgba(129, 140, 248, 0.24);
+      color: #e0e7ff;
+      border-color: rgba(129, 140, 248, 0.52);
+    }
+
+    /* Scrollable Solid Library Subwindow */
+    .library-subwindow {
+      height: 224px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: rgba(9, 14, 28, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 7px;
+    }
+
+    .solids-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .solid-btn {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 9px;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .solid-btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: var(--border-strong);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .solid-btn.active-type {
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.24), rgba(129, 140, 248, 0.18));
+      border-color: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.45);
+    }
+
+    .solid-btn svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .solid-btn:hover svg,
+    .solid-btn.active-type svg {
+      stroke: var(--cyan);
+    }
+
+    .solid-btn span {
+      font-size: 10px;
+      font-weight: 600;
+      line-height: 1.1;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Scene Objects Chips */
+    .scene-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-height: 92px;
+      overflow-y: auto;
+    }
+
+    .scene-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(15, 23, 42, 0.85);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .scene-chip:hover {
+      border-color: rgba(148, 163, 184, 0.48);
+      color: #ffffff;
+    }
+
+    .scene-chip.selected {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--cyan);
+      color: #ffffff;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Action Buttons */
+    .btn-row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .btn-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .cad-btn {
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: rgba(30, 41, 59, 0.92);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 7px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+      text-align: center;
+    }
+
+    .cad-btn:hover {
+      background: rgba(51, 65, 85, 0.95);
+      border-color: rgba(148, 163, 184, 0.45);
+      color: #ffffff;
+    }
+
+    .cad-btn.danger:hover {
+      background: rgba(159, 18, 57, 0.48);
+      border-color: rgba(251, 113, 133, 0.55);
+      color: #fecdd3;
+    }
+
+    .cad-btn.accent {
+      background: rgba(129, 140, 248, 0.22);
+      border-color: rgba(129, 140, 248, 0.45);
+      color: #e0e7ff;
+    }
+
+    .cad-btn.accent:hover {
+      background: rgba(129, 140, 248, 0.34);
+    }
+
+    .cad-btn.primary {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      border: none;
+      color: #0b1120;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 9px 12px;
+      box-shadow: 0 6px 18px -4px rgba(56, 189, 248, 0.42);
+    }
+
+    .cad-btn.primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .cad-btn.active-toggle {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: var(--cyan);
+      color: #e0f2fe;
+    }
+
+    /* Sliders */
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+    }
+
+    .slider-label {
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    .slider-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--cyan);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"].cad-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.26);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].cad-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border: 2px solid #0f172a;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+      cursor: pointer;
+    }
+
+    input[type="range"].cad-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      border: 2px solid #0f172a;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+      cursor: pointer;
+    }
+
+    /* Stats Grid */
+    .stats-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .stats-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .stat-box {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 8px;
+      padding: 6px;
+      text-align: center;
+    }
+
+    .stat-k {
+      font-size: 9.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .stat-v {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-v.cyan { color: #7dd3fc; }
+    .stat-v.indigo { color: #a5b4fc; }
+
+    /* Snap Row & Color Swatches */
+    .inline-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;
+    }
+
+    .cad-select {
+      background: #0f172a;
+      color: var(--cyan);
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .color-picker-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 8px;
+      padding: 5px 8px;
+    }
+
+    .color-input-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    input[type="color"].cad-color-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    input[type="color"].cad-color-input::-webkit-color-swatch-wrapper {
+      padding: 1px;
+    }
+
+    input[type="color"].cad-color-input::-webkit-color-swatch {
+      border: none;
+      border-radius: 4px;
+    }
+
+    .face-mode-hint {
+      font-size: 10.5px;
+      color: #6ee7b7;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 7px;
+      padding: 6px 8px;
+      line-height: 1.35;
+    }
+
+    .swatches-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .swatch-btn {
+      width: 100%;
+      height: 26px;
+      border-radius: 7px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+    }
+
+    .swatch-btn:hover {
+      transform: scale(1.06);
+    }
+
+    .swatch-btn.active {
+      border-color: #ffffff;
+      transform: scale(1.08);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.55);
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(148, 163, 184, 0.16);
+      margin: 2px 0;
+    }
+
+    /* ==================== 3D VIEWPORT & HUD ==================== */
+    #viewport {
+      flex: 1;
+      width: calc(100vw - var(--sidebar-w));
+      height: 100vh;
+      min-width: 300px;
+      min-height: 300px;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    #viewport.hover-solid {
+      cursor: pointer;
+    }
+
+    #viewport.hover-paint {
+      cursor: crosshair;
+    }
+
+    #viewport.dragging-solid {
+      cursor: grabbing;
+    }
+
+    #viewport canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      outline: none;
+    }
+
+    /* Top-Center Engine Status Badge */
+    #engine-status-badge {
+      position: absolute;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      color: #e0f2fe;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      box-shadow: 0 12px 30px rgba(2, 6, 23, 0.75);
+      z-index: 50;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    #engine-status-badge.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .spinner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulseDot 0.9s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      from { transform: scale(0.75); opacity: 0.45; }
+      to { transform: scale(1.2); opacity: 1; }
+    }
+
+    .hud-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .hud-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      pointer-events: auto;
+    }
+
+    .hud-glass {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 11px;
+      box-shadow: 0 10px 26px -8px rgba(2, 6, 23, 0.72);
+      padding: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hud-btn {
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.14s ease;
+    }
+
+    .hud-btn:hover {
+      background: rgba(51, 65, 85, 0.72);
+      color: #ffffff;
+    }
+
+    .hud-btn.active {
+      background: var(--cyan);
+      color: #0b1120;
+    }
+
+    .coords-pill {
+      padding: 6px 12px;
+      font-size: 12px;
+      gap: 8px;
+    }
+
+    .coords-pill.dragging {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5), 0 10px 26px -8px rgba(2, 6, 23, 0.7);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .status-dot.idle { background: #64748b; }
+    .status-dot.drag { background: var(--emerald); }
+
+    .coords-xyz {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--cyan);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .snap-pill-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .snap-pill-tag.paint {
+      background: rgba(52, 211, 153, 0.16);
+      color: #6ee7b7;
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+
+    .hud-bottom-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100% - 24px);
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Mobile Drawer Controls */
+    .mobile-only {
+      display: none;
+    }
+
+    @media (max-width: 780px) {
+      .mobile-only {
+        display: inline-flex;
+      }
+      #sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      #viewport {
+        width: 100vw;
+      }
+    }
+
+    /* Bright Red Error Fallback Box */
+    #error-banner {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #error-banner.visible {
+      display: flex;
+    }
+
+    .error-card {
+      max-width: 560px;
+      width: 100%;
+      background: #7f1d1d;
+      border: 2px solid #ef4444;
+      border-radius: 14px;
+      padding: 20px;
+      color: #ffffff;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+    }
+
+    .error-card h2 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fecaca;
+    }
+
+    .error-card pre {
+      margin: 0;
+      padding: 12px;
+      background: #450a0a;
+      border: 1px solid #f87171;
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- ==================== LEFT SIDEBAR ==================== -->
+    <aside id="sidebar" aria-label="Solids Library and Controls">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+              <polygon points="12 2 21 7 21 17 12 22 3 17 3 7 12 2"></polygon>
+              <polyline points="3.3 7 12 12 20.7 7"></polyline>
+              <line x1="12" y1="12" x2="12" y2="22"></line>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">SolidView</div>
+            <div class="brand-sub">3D Solids &amp; Planification</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span id="assembly-count-badge" class="count-badge">1 Solid</span>
+          <button id="btn-close-sidebar" type="button" class="hud-btn mobile-only" style="padding:4px 6px;" aria-label="Close Sidebar">✕</button>
+        </div>
+      </div>
+
+      <div class="sidebar-body">
+        <!-- 1. SCROLLABLE 20-SOLID LIBRARY SUBWINDOW -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Solid Library (20)</h2>
+            <span style="font-size:10.5px;color:#94a3b8;">Scroll &amp; click</span>
+          </div>
+
+          <div class="seg-control" role="group" aria-label="Library Action Mode">
+            <button id="mode-add-btn" type="button" class="seg-btn active">+ Add to Scene</button>
+            <button id="mode-replace-btn" type="button" class="seg-btn">Replace Selected</button>
+          </div>
+
+          <div id="category-pills" class="cat-pills" role="tablist" aria-label="Solid Categories">
+            <button type="button" class="cat-pill active" data-cat="all">All</button>
+            <button type="button" class="cat-pill" data-cat="basic">Basic</button>
+            <button type="button" class="cat-pill" data-cat="pyramids">Pyramids &amp; Cone</button>
+            <button type="button" class="cat-pill" data-cat="prisms">Prisms</button>
+            <button type="button" class="cat-pill" data-cat="platonic">Platonic</button>
+          </div>
+
+          <div id="library-subwindow" class="library-subwindow" role="listbox" aria-label="Scrollable Solids">
+            <div id="solids-grid" class="solids-grid"></div>
+          </div>
+        </section>
+
+        <!-- 2. SCENE OBJECTS -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Scene Objects</h2>
+            <span id="selected-solid-label" style="font-size:11px;font-weight:700;color:#38bdf8;">Cube #1</span>
+          </div>
+
+          <div id="scene-objects-chips" class="scene-chips"></div>
+
+          <div class="btn-row-3">
+            <button id="btn-duplicate" type="button" class="cad-btn" title="Duplicate (Ctrl+D)">Duplicate</button>
+            <button id="btn-delete" type="button" class="cad-btn danger" title="Delete (Del)">Delete</button>
+            <button id="btn-clear-all" type="button" class="cad-btn danger" title="Clear All">Clear All</button>
+          </div>
+        </section>
+
+        <!-- 3. DIMENSIONS SLIDERS -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Dimensions</h2>
+            <button id="btn-reset-dims" type="button" class="link-btn">Reset</button>
+          </div>
+          <div id="dimensions-container" style="display:flex;flex-direction:column;gap:9px;"></div>
+        </section>
+
+        <!-- 4. GEOMETRIC PROPERTIES -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Geometric Properties</h2>
+            <span id="euler-badge" style="font-size:10px;font-weight:700;color:#34d399;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);padding:1px 6px;border-radius:5px;">V−E+F = 2</span>
+          </div>
+
+          <div class="stats-grid-3">
+            <div class="stat-box">
+              <div class="stat-k">Faces (F)</div>
+              <div id="stat-faces" class="stat-v">6</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-k">Edges (E)</div>
+              <div id="stat-edges" class="stat-v">12</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-k">Vertices (V)</div>
+              <div id="stat-vertices" class="stat-v">8</div>
+            </div>
+          </div>
+
+          <div class="stats-grid-2">
+            <div class="stat-box">
+              <div class="stat-k">Surface Area</div>
+              <div id="stat-area" class="stat-v cyan">24.00 u²</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-k">Volume</div>
+              <div id="stat-volume" class="stat-v indigo">8.00 u³</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. PLANIFICATION (OPEN MESH) CONTROLS -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Planification (Open Mesh)</h2>
+            <button id="btn-xray" type="button" class="cad-btn" style="padding:3px 8px;font-size:10.5px;">X-Ray: Off</button>
+          </div>
+
+          <button id="btn-unfold-toggle" type="button" class="cad-btn primary">
+            Open Mesh (Planification)
+          </button>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span class="slider-label">Unfold Progress</span>
+              <span id="val-unfold-pct" class="slider-val">0%</span>
+            </div>
+            <input id="slider-unfold" type="range" class="cad-slider" min="0" max="100" step="0.5" value="0" aria-label="Unfold Percentage" />
+          </div>
+
+          <div class="seg-control" role="group" aria-label="Unfold Scope">
+            <button id="scope-selected-btn" type="button" class="seg-btn active">Selected Only</button>
+            <button id="scope-all-btn" type="button" class="seg-btn">All Solids</button>
+          </div>
+        </section>
+
+        <!-- 6. PLACEMENT, COLOR & FACE PAINTING -->
+        <section class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">Placement &amp; Assembly</h2>
+          </div>
+
+          <div class="inline-row">
+            <span style="font-weight:600;color:#e2e8f0;">Snap to Grid</span>
+            <select id="select-snap-step" class="cad-select" aria-label="Snap Step">
+              <option value="0">Off</option>
+              <option value="0.25">0.25</option>
+              <option value="0.5" selected>0.50</option>
+              <option value="1.0">1.00</option>
+            </select>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span class="slider-label">Elevation (Y)</span>
+              <span id="val-elev-y" class="slider-val">0.00</span>
+            </div>
+            <input id="slider-elev-y" type="range" class="cad-slider" min="0" max="10" step="0.25" value="0" aria-label="Elevation Y" />
+          </div>
+
+          <div class="btn-row-2">
+            <button id="btn-drop-floor" type="button" class="cad-btn">Drop to Floor</button>
+            <button id="btn-stack-top" type="button" class="cad-btn accent">Stack on Top</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="panel-head">
+            <span style="font-size:11px;font-weight:600;color:#cbd5e1;">Rotation</span>
+            <button id="btn-reset-rot" type="button" class="link-btn">Reset 0°</button>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span class="slider-label">Rotate X</span>
+              <span id="val-rot-x" class="slider-val">0°</span>
+            </div>
+            <input id="slider-rot-x" type="range" class="cad-slider" min="-180" max="180" step="15" value="0" aria-label="Rotate X" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span class="slider-label">Rotate Y</span>
+              <span id="val-rot-y" class="slider-val">0°</span>
+            </div>
+            <input id="slider-rot-y" type="range" class="cad-slider" min="-180" max="180" step="15" value="0" aria-label="Rotate Y" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-label-row">
+              <span class="slider-label">Rotate Z</span>
+              <span id="val-rot-z" class="slider-val">0°</span>
+            </div>
+            <input id="slider-rot-z" type="range" class="cad-slider" min="-180" max="180" step="15" value="0" aria-label="Rotate Z" />
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Color & Paint Target ("Paint: Whole Solid" vs "Paint: Single Face") -->
+          <div class="panel-head">
+            <span style="font-size:11px;font-weight:600;color:#cbd5e1;">Paint Mode &amp; Colors</span>
+            <button id="btn-clear-face-colors" type="button" class="link-btn" title="Reset per-face colors to whole-solid color">Reset Faces</button>
+          </div>
+
+          <div class="seg-control" role="group" aria-label="Paint Target Mode">
+            <button id="paint-target-solid" type="button" class="seg-btn active">Paint: Whole Solid</button>
+            <button id="paint-target-face" type="button" class="seg-btn">Paint: Single Face</button>
+          </div>
+
+          <div id="face-paint-hint" class="face-mode-hint" style="display:none;">
+            <strong>Paint: Single Face active:</strong> Click any face of any solid in 3D to paint that logical face. Colors persist across dimension changes &amp; unfolding.
+          </div>
+
+          <div class="color-picker-row">
+            <label for="custom-color-picker" class="color-input-wrap">
+              <input id="custom-color-picker" type="color" class="cad-color-input" value="#38bdf8" aria-label="Custom Color Picker" />
+              <span>Custom Color</span>
+            </label>
+            <span id="val-color-hex" style="font-size:10.5px;font-family:monospace;color:#7dd3fc;font-weight:700;">#38BDF8</span>
+          </div>
+
+          <div id="color-swatches" class="swatches-grid" role="radiogroup" aria-label="Solid Color Swatches"></div>
+        </section>
+      </div>
+    </aside>
+
+    <!-- ==================== 3D VIEWPORT ==================== -->
+    <main id="viewport" aria-label="3D Geometric Solids Viewport">
+      <!-- Top-Center Engine Status Badge -->
+      <div id="engine-status-badge" role="status" aria-live="polite">
+        <span class="spinner-dot"></span>
+        <span>Initializing 3D Engine...</span>
+      </div>
+
+      <!-- Top Floating Toolbar -->
+      <div class="hud-top">
+        <div class="hud-group">
+          <button id="btn-open-sidebar" type="button" class="hud-glass hud-btn mobile-only" aria-label="Open Menu">☰ Menu</button>
+
+          <div class="hud-glass" role="group" aria-label="Camera Projection">
+            <button id="btn-cam-free" type="button" class="hud-btn active">Free View</button>
+            <button id="btn-cam-iso" type="button" class="hud-btn">Isometric View</button>
+          </div>
+
+          <div class="hud-glass">
+            <button id="btn-top-plan" type="button" class="hud-btn">Top View</button>
+            <button id="btn-reset-view" type="button" class="hud-btn">Reset View</button>
+          </div>
+        </div>
+
+        <div class="hud-group">
+          <div id="coords-pill" class="hud-glass coords-pill">
+            <span id="coords-dot" class="status-dot"></span>
+            <span id="coords-name" style="font-weight:600;">Cube #1</span>
+            <span id="coords-xyz" class="coords-xyz">(0.00, 0.00, 0.00)</span>
+            <span id="coords-snap-tag" class="snap-pill-tag">Snap 0.50</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subtle Bottom Shortcut Hint Bar -->
+      <div class="hud-bottom-hint">
+        Click: Toggle Select (or Paint Face) • Drag: Move XZ • Shift+Drag: Move Y • Arrows: Nudge • Shift+Arrows: Elevation • Ctrl+D: Duplicate • Del: Remove
+      </div>
+    </main>
+  </div>
+
+  <!-- Bright Red Error Fallback Box -->
+  <div id="error-banner" role="alert">
+    <div class="error-card">
+      <h2>3D Engine / Runtime Error</h2>
+      <p style="margin:0 0 10px 0;font-size:12.5px;color:#fee2e2;">
+        The 3D visualizer encountered an error:
+      </p>
+      <pre id="error-details"></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    // --------------------------------------------------------------------------
+    // 1. GLOBAL ERROR & WEBGL CONTEXT LOSS TRAPPING (NO IMPORTMAP)
+    // --------------------------------------------------------------------------
+    function showErrorBanner(err) {
+      const badge = document.getElementById('engine-status-badge');
+      if (badge) badge.classList.add('hidden');
+      const banner = document.getElementById('error-banner');
+      const details = document.getElementById('error-details');
+      if (banner && details) {
+        const text = err instanceof Error ? (err.message + '\n\n' + (err.stack || '')) : String(err);
+        details.textContent = text;
+        banner.classList.add('visible');
+      }
+    }
+
+    window.onerror = function (message, source, lineno, colno, error) {
+      showErrorBanner(error || (message + ' (' + source + ':' + lineno + ':' + colno + ')'));
+      return false;
+    };
+
+    window.addEventListener('unhandledrejection', function (event) {
+      showErrorBanner(event.reason || 'Unhandled promise rejection');
+    });
+
+    // Direct ES2020 CDN Module Imports (zero importmap dependency)
+    import * as THREE from 'https://esm.sh/three@0.160.0';
+    import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+    // --------------------------------------------------------------------------
+    // 2. CATALOG OF ALL 20 SOLIDS & 10 VIBRANT CAD COLORS
+    // --------------------------------------------------------------------------
+    const CAD_COLORS = [
+      { hex: '#38bdf8', name: 'Sky Cyan' },
+      { hex: '#818cf8', name: 'Indigo' },
+      { hex: '#2dd4bf', name: 'Teal' },
+      { hex: '#fbbf24', name: 'Amber' },
+      { hex: '#f472b6', name: 'Rose' },
+      { hex: '#a78bfa', name: 'Violet' },
+      { hex: '#34d399', name: 'Emerald' },
+      { hex: '#f87171', name: 'Coral Red' },
+      { hex: '#fb923c', name: 'Tangerine' },
+      { hex: '#e2e8f0', name: 'Cool Silver' }
+    ];
+
+    function makePolygonIcon(n, isPyramid) {
+      const cx = 16;
+      const cy = isPyramid ? 22 : 23;
+      const rx = 10.2;
+      const ry = 4.4;
+      const topY = 8.5;
+      const bot = [];
+      const top = [];
+      for (let i = 0; i < n; i++) {
+        const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n + (n % 2 === 0 ? Math.PI / n : 0);
+        const x = cx + rx * Math.cos(ang);
+        const y = cy + ry * Math.sin(ang);
+        bot.push([x.toFixed(1), y.toFixed(1)]);
+        top.push([x.toFixed(1), (y - (cy - topY)).toFixed(1)]);
+      }
+      const botPoly = bot.map(function (p) { return p.join(','); }).join(' ');
+      if (isPyramid) {
+        const rays = bot.map(function (p) {
+          return '<line x1="' + cx + '" y1="4.5" x2="' + p[0] + '" y2="' + p[1] + '" />';
+        }).join('');
+        return '<svg viewBox="0 0 32 32"><polygon points="' + botPoly + '" />' + rays + '</svg>';
+      }
+      const topPoly = top.map(function (p) { return p.join(','); }).join(' ');
+      const verts = bot.map(function (p, i) {
+        return '<line x1="' + p[0] + '" y1="' + p[1] + '" x2="' + top[i][0] + '" y2="' + top[i][1] + '" />';
+      }).join('');
+      return '<svg viewBox="0 0 32 32"><polygon points="' + botPoly + '" /><polygon points="' + topPoly + '" />' + verts + '</svg>';
+    }
+
+    const PYRAMID_ITEMS = [3, 4, 5, 6, 7, 8].map(function (n) {
+      return {
+        id: 'pyramid-' + n,
+        name: n + '-Sided Pyramid',
+        shortLabel: n + '-Pyramid',
+        category: 'pyramids',
+        type: 'pyramid',
+        n: n,
+        svg: makePolygonIcon(n, true),
+        params: [
+          { key: 'r', label: 'Base Radius (r)', min: 0.5, max: 3.0, step: 0.25, default: 1.5 },
+          { key: 'h', label: 'Height (h)', min: 0.5, max: 4.5, step: 0.25, default: 2.0 }
+        ],
+        getMetrics: function (params) {
+          const r = params.r;
+          const h = params.h;
+          const side = 2 * r * Math.sin(Math.PI / n);
+          const apothem = r * Math.cos(Math.PI / n);
+          const baseArea = 0.5 * n * r * r * Math.sin((2 * Math.PI) / n);
+          const slant = Math.sqrt(h * h + apothem * apothem);
+          return {
+            F: n + 1,
+            E: 2 * n,
+            V: n + 1,
+            area: baseArea + 0.5 * n * side * slant,
+            volume: (baseArea * h) / 3
+          };
+        }
+      };
+    });
+
+    const PRISM_ITEMS = [3, 4, 5, 6, 7, 8].map(function (n) {
+      return {
+        id: 'prism-' + n,
+        name: n + '-Sided Prism',
+        shortLabel: n + '-Prism',
+        category: 'prisms',
+        type: 'prism',
+        n: n,
+        svg: makePolygonIcon(n, false),
+        params: [
+          { key: 'r', label: 'Base Radius (r)', min: 0.5, max: 3.0, step: 0.25, default: 1.5 },
+          { key: 'h', label: 'Height (h)', min: 0.5, max: 4.5, step: 0.25, default: 2.0 }
+        ],
+        getMetrics: function (params) {
+          const r = params.r;
+          const h = params.h;
+          const side = 2 * r * Math.sin(Math.PI / n);
+          const baseArea = 0.5 * n * r * r * Math.sin((2 * Math.PI) / n);
+          return {
+            F: n + 2,
+            E: 3 * n,
+            V: 2 * n,
+            area: 2 * baseArea + n * side * h,
+            volume: baseArea * h
+          };
+        }
+      };
+    });
+
+    const SOLID_CATALOG = [
+      // BASIC (3)
+      {
+        id: 'cube',
+        name: 'Cube',
+        shortLabel: 'Cube',
+        category: 'basic',
+        svg: '<svg viewBox="0 0 32 32"><polygon points="16,4 27,10.2 27,21.8 16,28 5,21.8 5,10.2" /><polyline points="5,10.2 16,16.4 27,10.2" /><line x1="16" y1="16.4" x2="16" y2="28" /></svg>',
+        params: [
+          { key: 'a', label: 'Side Length (a)', min: 0.5, max: 4.5, step: 0.25, default: 2.0 }
+        ],
+        getMetrics: function (p) {
+          return { F: 6, E: 12, V: 8, area: 6 * p.a * p.a, volume: p.a * p.a * p.a };
+        }
+      },
+      {
+        id: 'cuboid',
+        name: 'Cuboid',
+        shortLabel: 'Cuboid',
+        category: 'basic',
+        svg: '<svg viewBox="0 0 32 32"><polygon points="16,6 28.5,11.8 28.5,20.5 16,26.3 3.5,20.5 3.5,11.8" /><polyline points="3.5,11.8 16,17.6 28.5,11.8" /><line x1="16" y1="17.6" x2="16" y2="26.3" /></svg>',
+        params: [
+          { key: 'w', label: 'Width (w)', min: 0.5, max: 4.5, step: 0.25, default: 2.5 },
+          { key: 'h', label: 'Height (h)', min: 0.5, max: 4.5, step: 0.25, default: 1.5 },
+          { key: 'd', label: 'Depth (d)', min: 0.5, max: 4.5, step: 0.25, default: 2.0 }
+        ],
+        getMetrics: function (p) {
+          return {
+            F: 6, E: 12, V: 8,
+            area: 2 * (p.w * p.h + p.w * p.d + p.h * p.d),
+            volume: p.w * p.h * p.d
+          };
+        }
+      },
+      {
+        id: 'cylinder',
+        name: 'Cylinder',
+        shortLabel: 'Cylinder',
+        category: 'basic',
+        svg: '<svg viewBox="0 0 32 32"><ellipse cx="16" cy="8.5" rx="9.5" ry="3.8" /><path d="M6.5,8.5 L6.5,23.5 A9.5,3.8 0 0,0 25.5,23.5 L25.5,8.5" /><path d="M6.5,23.5 A9.5,3.8 0 0,1 25.5,23.5" stroke-dasharray="2.2 2" opacity="0.55" /></svg>',
+        params: [
+          { key: 'r', label: 'Base Radius (r)', min: 0.5, max: 2.5, step: 0.25, default: 1.0 },
+          { key: 'h', label: 'Height (h)', min: 0.5, max: 4.5, step: 0.25, default: 2.0 }
+        ],
+        getMetrics: function (p) {
+          return {
+            F: 3, E: 2, V: 0,
+            area: 2 * Math.PI * p.r * (p.r + p.h),
+            volume: Math.PI * p.r * p.r * p.h,
+            note: 'Curved Solid'
+          };
+        }
+      }
+    ].concat(
+      // PYRAMIDS (3..8) & CONE immediately after 8-Pyramid
+      PYRAMID_ITEMS,
+      [
+        {
+          id: 'cone',
+          name: 'Cone',
+          shortLabel: 'Cone',
+          category: 'pyramids',
+          svg: '<svg viewBox="0 0 32 32"><path d="M16,4.5 L6.2,23 A9.8,4 0 0,0 25.8,23 Z" /><path d="M6.2,23 A9.8,4 0 0,1 25.8,23" stroke-dasharray="2.2 2" opacity="0.55" /></svg>',
+          params: [
+            { key: 'r', label: 'Base Radius (r)', min: 0.5, max: 2.5, step: 0.25, default: 1.25 },
+            { key: 'h', label: 'Height (h)', min: 0.5, max: 4.5, step: 0.25, default: 2.25 }
+          ],
+          getMetrics: function (p) {
+            const slant = Math.sqrt(p.r * p.r + p.h * p.h);
+            return {
+              F: 2, E: 1, V: 1,
+              area: Math.PI * p.r * (p.r + slant),
+              volume: (Math.PI * p.r * p.r * p.h) / 3,
+              note: 'Curved Solid'
+            };
+          }
+        }
+      ],
+      // PRISMS (3..8)
+      PRISM_ITEMS,
+      // PLATONIC SOLIDS (4)
+      [
+        {
+          id: 'tetrahedron',
+          name: 'Tetrahedron',
+          shortLabel: 'Tetrahedron',
+          category: 'platonic',
+          svg: '<svg viewBox="0 0 32 32"><polygon points="16,4.5 27,23.5 5,23.5" /><line x1="16" y1="4.5" x2="17.5" y2="18.2" /><line x1="5" y1="23.5" x2="17.5" y2="18.2" /><line x1="27" y1="23.5" x2="17.5" y2="18.2" /></svg>',
+          params: [
+            { key: 'a', label: 'Side Length (a)', min: 0.5, max: 4.0, step: 0.25, default: 2.5 }
+          ],
+          getMetrics: function (p) {
+            return {
+              F: 4, E: 6, V: 4,
+              area: Math.sqrt(3) * p.a * p.a,
+              volume: (Math.sqrt(2) / 12) * Math.pow(p.a, 3)
+            };
+          }
+        },
+        {
+          id: 'octahedron',
+          name: 'Octahedron',
+          shortLabel: 'Octahedron',
+          category: 'platonic',
+          svg: '<svg viewBox="0 0 32 32"><polygon points="16,3.5 27.5,16 16,28.5 4.5,16" /><polyline points="4.5,16 16,19.5 27.5,16" /><line x1="16" y1="3.5" x2="16" y2="28.5" /></svg>',
+          params: [
+            { key: 'a', label: 'Side Length (a)', min: 0.5, max: 4.0, step: 0.25, default: 2.0 }
+          ],
+          getMetrics: function (p) {
+            return {
+              F: 8, E: 12, V: 6,
+              area: 2 * Math.sqrt(3) * p.a * p.a,
+              volume: (Math.sqrt(2) / 3) * Math.pow(p.a, 3)
+            };
+          }
+        },
+        {
+          id: 'dodecahedron',
+          name: 'Dodecahedron',
+          shortLabel: 'Dodecahedron',
+          category: 'platonic',
+          svg: '<svg viewBox="0 0 32 32"><polygon points="16,3.5 26.5,9.5 28.5,21 20.5,28.5 11.5,28.5 3.5,21 5.5,9.5" /><polygon points="16,9.5 22.2,14 19.8,21.2 12.2,21.2 9.8,14" /><line x1="16" y1="3.5" x2="16" y2="9.5" /><line x1="26.5" y1="9.5" x2="22.2" y2="14" /><line x1="20.5" y1="28.5" x2="19.8" y2="21.2" /><line x1="11.5" y1="28.5" x2="12.2" y2="21.2" /><line x1="5.5" y1="9.5" x2="9.8" y2="14" /></svg>',
+          params: [
+            { key: 'a', label: 'Side Length (a)', min: 0.5, max: 3.5, step: 0.25, default: 1.5 }
+          ],
+          getMetrics: function (p) {
+            return {
+              F: 12, E: 30, V: 20,
+              area: 3 * Math.sqrt(25 + 10 * Math.sqrt(5)) * p.a * p.a,
+              volume: ((15 + 7 * Math.sqrt(5)) / 4) * Math.pow(p.a, 3)
+            };
+          }
+        },
+        {
+          id: 'icosahedron',
+          name: 'Icosahedron',
+          shortLabel: 'Icosahedron',
+          category: 'platonic',
+          svg: '<svg viewBox="0 0 32 32"><polygon points="16,3.5 27,9.8 27,22.2 16,28.5 5,22.2 5,9.8" /><polygon points="16,9.5 23.5,20.5 8.5,20.5" /><line x1="16" y1="3.5" x2="16" y2="9.5" /><line x1="5" y1="9.8" x2="16" y2="9.5" /><line x1="27" y1="9.8" x2="16" y2="9.5" /><line x1="5" y1="9.8" x2="8.5" y2="20.5" /><line x1="27" y1="9.8" x2="23.5" y2="20.5" /><line x1="5" y1="22.2" x2="8.5" y2="20.5" /><line x1="27" y1="22.2" x2="23.5" y2="20.5" /><line x1="16" y1="28.5" x2="8.5" y2="20.5" /><line x1="16" y1="28.5" x2="23.5" y2="20.5" /></svg>',
+          params: [
+            { key: 'a', label: 'Side Length (a)', min: 0.5, max: 3.5, step: 0.25, default: 1.75 }
+          ],
+          getMetrics: function (p) {
+            return {
+              F: 20, E: 30, V: 12,
+              area: 5 * Math.sqrt(3) * p.a * p.a,
+              volume: ((5 * (3 + Math.sqrt(5))) / 12) * Math.pow(p.a, 3)
+            };
+          }
+        }
+      ]
+    );
+
+    // --------------------------------------------------------------------------
+    // 3. APPLICATION STATE
+    // --------------------------------------------------------------------------
+    const state = {
+      sceneSolids: [],
+      selectedSolidId: null,
+      nextSolidNum: 1,
+      libraryMode: 'add',        // 'add' | 'replace'
+      libraryCategory: 'all',    // 'all' | 'basic' | 'pyramids' | 'prisms' | 'platonic'
+      paintTarget: 'solid',      // 'solid' | 'face'
+      activeColor: '#38bdf8',
+      snapStep: 0.5,             // 0 = Off, 0.25, 0.50, 1.00
+      cameraMode: 'free',        // 'free' | 'iso'
+      unfoldScope: 'selected',   // 'selected' | 'all'
+      xrayMode: false,
+      isAnimatingUnfold: false,
+      animStartTime: 0,
+      animDuration: 850,
+      animTargets: [],
+      firstFrameRendered: false
+    };
+
+    const dragState = {
+      isDragging: false,
+      solid: null,
+      verticalMode: false,
+      dragPlane: new THREE.Plane(),
+      dragOffset: new THREE.Vector3(),
+      pointerDownX: 0,
+      pointerDownY: 0,
+      pointerDownHitSolid: null
+    };
+
+    // --------------------------------------------------------------------------
+    // 4. THREE.JS SCENE, CAMERAS, LIGHTING & RESIZE GUARD
+    // --------------------------------------------------------------------------
+    let scene, renderer, perspCamera, orthoCamera, activeCamera, controls;
+    const assemblyGroup = new THREE.Group();
+    const raycaster = new THREE.Raycaster();
+    const pointerNDC = new THREE.Vector2();
+    const ISO_FRUSTUM = 11.0;
+
+    function getViewportSize() {
+      const vp = document.getElementById('viewport');
+      const w = Math.max(vp ? vp.clientWidth : 0, 400);
+      const h = Math.max(vp ? vp.clientHeight : 0, 300);
+      return { width: w, height: h };
+    }
+
+    function initThree() {
+      const viewport = document.getElementById('viewport');
+      const { width, height } = getViewportSize();
+      const aspect = width / height;
+
+      scene = new THREE.Scene();
+
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance'
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      viewport.appendChild(renderer.domElement);
+
+      // WebGL context loss guard
+      renderer.domElement.addEventListener('webglcontextlost', function (e) {
+        e.preventDefault();
+        showErrorBanner('WebGL context was lost by the browser or GPU driver. Please reload the page.');
+      });
+
+      // Free View PerspectiveCamera
+      perspCamera = new THREE.PerspectiveCamera(42, aspect, 0.1, 300);
+      perspCamera.position.set(6.5, 5.6, 7.6);
+
+      // True Axonometric Isometric OrthographicCamera (near = -200, far = 200)
+      orthoCamera = new THREE.OrthographicCamera(
+        (-ISO_FRUSTUM * aspect) / 2,
+        (ISO_FRUSTUM * aspect) / 2,
+        ISO_FRUSTUM / 2,
+        -ISO_FRUSTUM / 2,
+        -200,
+        200
+      );
+      orthoCamera.position.set(16, 16, 16);
+      orthoCamera.lookAt(0, 1.0, 0);
+
+      activeCamera = perspCamera;
+
+      controls = new OrbitControls(activeCamera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.target.set(0, 1.0, 0);
+      controls.minDistance = 1.8;
+      controls.maxDistance = 80;
+      controls.minZoom = 0.25;
+      controls.maxZoom = 4.5;
+      controls.update();
+
+      // Studio Lighting
+      const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+      scene.add(ambient);
+
+      const hemi = new THREE.HemisphereLight(0xe0f2fe, 0x1e293b, 0.65);
+      hemi.position.set(0, 24, 0);
+      scene.add(hemi);
+
+      const dirKey = new THREE.DirectionalLight(0xffffff, 0.95);
+      dirKey.position.set(10, 18, 12);
+      dirKey.castShadow = true;
+      dirKey.shadow.mapSize.width = 1024;
+      dirKey.shadow.mapSize.height = 1024;
+      dirKey.shadow.camera.near = 1;
+      dirKey.shadow.camera.far = 60;
+      const dShadow = 14;
+      dirKey.shadow.camera.left = -dShadow;
+      dirKey.shadow.camera.right = dShadow;
+      dirKey.shadow.camera.top = dShadow;
+      dirKey.shadow.camera.bottom = -dShadow;
+      dirKey.shadow.bias = -0.0005;
+      scene.add(dirKey);
+
+      const dirFill = new THREE.DirectionalLight(0x818cf8, 0.38);
+      dirFill.position.set(-12, 8, -10);
+      scene.add(dirFill);
+
+      // Subtle shadow-receiving ground plane at y = 0
+      const shadowFloorGeo = new THREE.PlaneGeometry(40, 40);
+      shadowFloorGeo.rotateX(-Math.PI / 2);
+      const shadowFloorMat = new THREE.ShadowMaterial({ opacity: 0.24 });
+      const shadowFloor = new THREE.Mesh(shadowFloorGeo, shadowFloorMat);
+      shadowFloor.position.y = -0.001;
+      shadowFloor.receiveShadow = true;
+      scene.add(shadowFloor);
+
+      // 20x20 Grid Helper
+      const gridMajor = new THREE.GridHelper(20, 20, 0x334155, 0x1e293b);
+      gridMajor.position.y = -0.002;
+      gridMajor.material.transparent = true;
+      gridMajor.material.opacity = 0.85;
+      scene.add(gridMajor);
+
+      // RGB Axis Lines at Origin (X = Red, Y = Green, Z = Blue)
+      function makeAxis(p1, p2, col) {
+        const g = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+        const m = new THREE.LineBasicMaterial({ color: col, transparent: true, opacity: 0.88 });
+        return new THREE.Line(g, m);
+      }
+      scene.add(makeAxis(new THREE.Vector3(0, 0.003, 0), new THREE.Vector3(2.2, 0.003, 0), 0xef4444));
+      scene.add(makeAxis(new THREE.Vector3(0, 0.003, 0), new THREE.Vector3(0, 2.2, 0), 0x22c55e));
+      scene.add(makeAxis(new THREE.Vector3(0, 0.003, 0), new THREE.Vector3(0, 0.003, 2.2), 0x3b82f6));
+
+      scene.add(assemblyGroup);
+
+      // ResizeObserver & window resize guard
+      window.addEventListener('resize', handleResize);
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(handleResize);
+        ro.observe(viewport);
+      }
+
+      // Pointer listeners for selection toggle, face painting, empty-space deselection & dragging
+      const canvas = renderer.domElement;
+      canvas.addEventListener('pointerdown', onCanvasPointerDown);
+      window.addEventListener('pointermove', onWindowPointerMove);
+      window.addEventListener('pointerup', onWindowPointerUp);
+      window.addEventListener('pointercancel', onWindowPointerUp);
+    }
+
+    function handleResize() {
+      if (!renderer || !perspCamera || !orthoCamera) return;
+      const { width, height } = getViewportSize();
+      const aspect = width / height;
+
+      perspCamera.aspect = aspect;
+      perspCamera.updateProjectionMatrix();
+
+      orthoCamera.left = (-ISO_FRUSTUM * aspect) / 2;
+      orthoCamera.right = (ISO_FRUSTUM * aspect) / 2;
+      orthoCamera.top = ISO_FRUSTUM / 2;
+      orthoCamera.bottom = -ISO_FRUSTUM / 2;
+      orthoCamera.updateProjectionMatrix();
+
+      renderer.setSize(width, height);
+    }
+
+    // --------------------------------------------------------------------------
+    // 5. CAMERA MODES (FREE, ISOMETRIC, TOP VIEW, RESET)
+    // --------------------------------------------------------------------------
+    function setCameraMode(mode) {
+      state.cameraMode = mode;
+      const btnFree = document.getElementById('btn-cam-free');
+      const btnIso = document.getElementById('btn-cam-iso');
+      btnFree.classList.toggle('active', mode === 'free');
+      btnIso.classList.toggle('active', mode === 'iso');
+
+      const prevTarget = controls.target.clone();
+      controls.dispose();
+
+      if (mode === 'free') {
+        activeCamera = perspCamera;
+        controls = new OrbitControls(activeCamera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.enableRotate = true;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.minDistance = 1.8;
+        controls.maxDistance = 80;
+        controls.target.copy(prevTarget);
+        controls.update();
+      } else {
+        activeCamera = orthoCamera;
+        const d = 18;
+        activeCamera.position.set(prevTarget.x + d, prevTarget.y + d, prevTarget.z + d);
+        activeCamera.lookAt(prevTarget);
+        activeCamera.updateProjectionMatrix();
+
+        controls = new OrbitControls(activeCamera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.08;
+        controls.enableRotate = false;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.minZoom = 0.25;
+        controls.maxZoom = 4.5;
+        controls.mouseButtons = {
+          LEFT: THREE.MOUSE.PAN,
+          MIDDLE: THREE.MOUSE.DOLLY,
+          RIGHT: THREE.MOUSE.PAN
+        };
+        controls.target.copy(prevTarget);
+        controls.update();
+      }
+    }
+
+    function resetCamera() {
+      controls.target.set(0, 1.0, 0);
+      if (state.cameraMode === 'free') {
+        perspCamera.position.set(6.5, 5.6, 7.6);
+        perspCamera.updateProjectionMatrix();
+      } else {
+        const d = 18;
+        orthoCamera.position.set(d, 1.0 + d, d);
+        orthoCamera.zoom = 1.0;
+        orthoCamera.updateProjectionMatrix();
+      }
+      controls.update();
+    }
+
+    function alignTopPlanView() {
+      if (state.cameraMode === 'iso') {
+        setCameraMode('free');
+      }
+      const sel = getSelectedSolid();
+      const tx = sel ? sel.position.x : 0;
+      const tz = sel ? sel.position.z : 0;
+      controls.target.set(tx, 0, tz);
+      perspCamera.position.set(tx, 14.0, tz + 0.005);
+      perspCamera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    // --------------------------------------------------------------------------
+    // 6. COLOR HELPERS & EXACT PLANIFICATION (OPEN MESH) ENGINE
+    //    Supports all 18 Polyhedra + Smooth Unrolling Cylinder + Smooth Unrolling Cone
+    //    With persistent per-face color overrides
+    // --------------------------------------------------------------------------
+    function getFacetShade(hex, index, uniformShade) {
+      const base = new THREE.Color(hex);
+      if (uniformShade) return base;
+      const hsl = { h: 0, s: 0, l: 0 };
+      base.getHSL(hsl);
+      const offsets = [0, -0.045, 0.04, -0.025, 0.055, -0.055];
+      const delta = offsets[index % offsets.length];
+      return new THREE.Color().setHSL(
+        hsl.h,
+        Math.min(1, Math.max(0.2, hsl.s)),
+        Math.min(0.84, Math.max(0.24, hsl.l + delta))
+      );
+    }
+
+    function resolveFaceColor(solidInst, faceKey, faceIdx, uniformShade) {
+      const overrideHex = solidInst.faceColors && solidInst.faceColors[faceKey];
+      if (overrideHex) {
+        return getFacetShade(overrideHex, faceIdx, uniformShade);
+      }
+      return getFacetShade(solidInst.color, faceIdx, uniformShade);
+    }
+
+    function computeBfsSpanningTree(faces, rootIdx) {
+      const visited = new Set([rootIdx]);
+      const queue = [rootIdx];
+      const edges = [];
+
+      while (queue.length > 0) {
+        const curr = queue.shift();
+        const cf = faces[curr];
+        for (let i = 0; i < cf.length; i++) {
+          const a = cf[i];
+          const b = cf[(i + 1) % cf.length];
+          for (let nbr = 0; nbr < faces.length; nbr++) {
+            if (nbr === curr || visited.has(nbr)) continue;
+            const nf = faces[nbr];
+            for (let j = 0; j < nf.length; j++) {
+              if (nf[j] === b && nf[(j + 1) % nf.length] === a) {
+                visited.add(nbr);
+                edges.push([curr, nbr]);
+                queue.push(nbr);
+                break;
+              }
+            }
+          }
+        }
+      }
+      return edges;
+    }
+
+    function buildSolidGeometryTree(solidInst) {
+      const catalogItem = SOLID_CATALOG.find(function (s) { return s.id === solidInst.typeId; });
+      const p = solidInst.params;
+      const isSelected = solidInst.id === state.selectedSolidId;
+
+      const hingeControllers = [];
+      const faceMaterials = [];
+      const edgeMaterials = [];
+      const hingeMaterials = [];
+
+      function createFaceMaterial(faceKey, faceIdx, uniformShade) {
+        const mat = new THREE.MeshStandardMaterial({
+          color: resolveFaceColor(solidInst, faceKey, faceIdx, uniformShade),
+          roughness: 0.36,
+          metalness: 0.08,
+          side: THREE.DoubleSide,
+          transparent: state.xrayMode,
+          opacity: state.xrayMode ? 0.4 : 1.0,
+          depthWrite: !state.xrayMode,
+          polygonOffset: true,
+          polygonOffsetFactor: 1,
+          polygonOffsetUnits: 1
+        });
+        faceMaterials.push({ mat: mat, faceKey: faceKey, faceIdx: faceIdx, uniformShade: uniformShade });
+        return mat;
+      }
+
+      function createEdgeMaterial() {
+        const mat = new THREE.LineBasicMaterial({
+          color: isSelected ? 0xffffff : 0x0b1120,
+          transparent: true,
+          opacity: isSelected ? 0.96 : 0.8
+        });
+        edgeMaterials.push(mat);
+        return mat;
+      }
+
+      function createHingeMaterial() {
+        const mat = new THREE.LineDashedMaterial({
+          color: isSelected ? 0x7dd3fc : 0x38bdf8,
+          dashSize: 0.14,
+          gapSize: 0.08,
+          transparent: true,
+          opacity: 0.9
+        });
+        hingeMaterials.push(mat);
+        return mat;
+      }
+
+      function buildPolygonPiece(points3D, faceKey, faceIdx, hingeEdgeSet, options) {
+        const opts = options || {};
+        const group = new THREE.Group();
+        const n = points3D.length;
+        if (n < 3) return group;
+
+        const positions = [];
+        for (let i = 1; i < n - 1; i++) {
+          positions.push(
+            points3D[0].x, points3D[0].y, points3D[0].z,
+            points3D[i].x, points3D[i].y, points3D[i].z,
+            points3D[i + 1].x, points3D[i + 1].y, points3D[i + 1].z
+          );
+        }
+
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geom.computeVertexNormals();
+        geom.computeBoundingSphere();
+
+        const mesh = new THREE.Mesh(geom, createFaceMaterial(faceKey, faceIdx, Boolean(opts.uniformShade)));
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.frustumCulled = false;
+        mesh.userData.solidInstanceId = solidInst.id;
+        mesh.userData.faceKey = faceKey;
+        group.add(mesh);
+
+        const solidPts = [];
+        const hingePts = [];
+
+        for (let i = 0; i < n; i++) {
+          const pA = points3D[i];
+          const pB = points3D[(i + 1) % n];
+          const isHinge = hingeEdgeSet.has(i);
+          if (isHinge) {
+            if (!opts.hideInternalHinges) {
+              hingePts.push(pA, pB);
+            }
+          } else {
+            solidPts.push(pA, pB);
+          }
+        }
+
+        if (solidPts.length > 0) {
+          const edgeGeom = new THREE.BufferGeometry().setFromPoints(solidPts);
+          edgeGeom.computeBoundingSphere();
+          const lines = new THREE.LineSegments(edgeGeom, createEdgeMaterial());
+          lines.frustumCulled = false;
+          group.add(lines);
+        }
+
+        if (hingePts.length > 0) {
+          const hingeGeom = new THREE.BufferGeometry().setFromPoints(hingePts);
+          hingeGeom.computeBoundingSphere();
+          const hLines = new THREE.LineSegments(hingeGeom, createHingeMaterial());
+          hLines.frustumCulled = false;
+          hLines.computeLineDistances();
+          group.add(hLines);
+        }
+
+        return group;
+      }
+
+      function computeFaceNormal(verts, face) {
+        const e1 = new THREE.Vector3().subVectors(verts[face[1]], verts[face[0]]);
+        const e2 = new THREE.Vector3().subVectors(verts[face[2]], verts[face[0]]);
+        const n = new THREE.Vector3().crossVectors(e1, e2);
+        return n.lengthSq() > 1e-12 ? n.normalize() : new THREE.Vector3(0, 1, 0);
+      }
+
+      function buildPolyhedronHingeTree(vertices, faces, rootFaceIdx, customSpanningEdges, options) {
+        const opts = options || {};
+        const faceNormals = faces.map(function (f) { return computeFaceNormal(vertices, f); });
+        const faceCentroids = faces.map(function (f) {
+          const c = new THREE.Vector3();
+          f.forEach(function (idx) { c.add(vertices[idx]); });
+          return c.divideScalar(f.length);
+        });
+
+        const polyCenter = new THREE.Vector3();
+        faceCentroids.forEach(function (c) { polyCenter.add(c); });
+        polyCenter.divideScalar(faces.length);
+
+        faces.forEach(function (f, idx) {
+          const toCentroid = new THREE.Vector3().subVectors(faceCentroids[idx], polyCenter);
+          if (faceNormals[idx].dot(toCentroid) < 0) {
+            f.reverse();
+            faceNormals[idx].negate();
+          }
+        });
+
+        const spanningEdges = customSpanningEdges || computeBfsSpanningTree(faces, rootFaceIdx);
+
+        const childrenMap = Array.from({ length: faces.length }, function () { return []; });
+        const hingeEdgesByFace = Array.from({ length: faces.length }, function () { return new Set(); });
+
+        spanningEdges.forEach(function (pair) {
+          const pIdx = pair[0];
+          const cIdx = pair[1];
+          const pFace = faces[pIdx];
+          const cFace = faces[cIdx];
+          let foundEdgeIdx = -1;
+          for (let i = 0; i < pFace.length; i++) {
+            const a = pFace[i];
+            const b = pFace[(i + 1) % pFace.length];
+            for (let j = 0; j < cFace.length; j++) {
+              if (cFace[j] === b && cFace[(j + 1) % cFace.length] === a) {
+                foundEdgeIdx = i;
+                break;
+              }
+            }
+            if (foundEdgeIdx !== -1) break;
+          }
+          if (foundEdgeIdx !== -1) {
+            childrenMap[pIdx].push({ childFaceIdx: cIdx, parentEdgeIdx: foundEdgeIdx });
+            hingeEdgesByFace[pIdx].add(foundEdgeIdx);
+          }
+        });
+
+        const n0 = faceNormals[rootFaceIdx].clone();
+        const targetDown = new THREE.Vector3(0, -1, 0);
+        const rootQuat = new THREE.Quaternion();
+        if (n0.dot(targetDown) < -0.999999) {
+          rootQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI);
+        } else {
+          rootQuat.setFromUnitVectors(n0, targetDown);
+        }
+
+        const c0Aligned = faceCentroids[rootFaceIdx].clone().applyQuaternion(rootQuat);
+        const rootVerts = vertices.map(function (v) {
+          return v.clone().applyQuaternion(rootQuat).sub(new THREE.Vector3(c0Aligned.x, c0Aligned.y, c0Aligned.z));
+        });
+        const rootNormals = faces.map(function (f) { return computeFaceNormal(rootVerts, f); });
+
+        function getFaceKeyForIndex(faceIdx) {
+          if (opts.curvedLateral) {
+            if (faceIdx === 0) return 'base';
+            if (faceIdx <= opts.lateralCount) return 'lateral';
+            return 'top';
+          }
+          return 'face_' + faceIdx;
+        }
+
+        function buildNode(faceIdx, parentFrame) {
+          const f = faces[faceIdx];
+          const nSelf = rootNormals[faceIdx];
+
+          const localHinges = new Set(hingeEdgesByFace[faceIdx]);
+          if (parentFrame && parentFrame.incomingEdgeVerts) {
+            const inA = parentFrame.incomingEdgeVerts[0];
+            const inB = parentFrame.incomingEdgeVerts[1];
+            for (let i = 0; i < f.length; i++) {
+              if (f[i] === inB && f[(i + 1) % f.length] === inA) {
+                localHinges.add(i);
+                break;
+              }
+            }
+          }
+
+          const localPts = f.map(function (vIdx) {
+            const pt = rootVerts[vIdx];
+            if (!parentFrame) {
+              return new THREE.Vector3(pt.x, 0, pt.z);
+            }
+            const rel = new THREE.Vector3().subVectors(pt, parentFrame.M);
+            return new THREE.Vector3(rel.dot(parentFrame.ex), 0, rel.dot(parentFrame.uC));
+          });
+
+          const isLateralCurved = Boolean(opts.curvedLateral && faceIdx > 0 && faceIdx <= opts.lateralCount);
+          const faceKey = getFaceKeyForIndex(faceIdx);
+          const container = new THREE.Group();
+          container.add(
+            buildPolygonPiece(localPts, faceKey, faceIdx, localHinges, {
+              uniformShade: isLateralCurved,
+              hideInternalHinges: isLateralCurved
+            })
+          );
+
+          childrenMap[faceIdx].forEach(function (childEntry) {
+            const childFaceIdx = childEntry.childFaceIdx;
+            const parentEdgeIdx = childEntry.parentEdgeIdx;
+            const vAIdx = f[parentEdgeIdx];
+            const vBIdx = f[(parentEdgeIdx + 1) % f.length];
+            const A = rootVerts[vAIdx];
+            const B = rootVerts[vBIdx];
+
+            const M = new THREE.Vector3().addVectors(A, B).multiplyScalar(0.5);
+            const exVec = new THREE.Vector3().subVectors(B, A);
+            const ex = exVec.lengthSq() > 1e-12 ? exVec.normalize() : new THREE.Vector3(1, 0, 0);
+            const ey = nSelf.clone().negate();
+            const ezVec = new THREE.Vector3().crossVectors(nSelf, ex);
+            const ez = ezVec.lengthSq() > 1e-12 ? ezVec.normalize() : new THREE.Vector3(0, 0, 1);
+
+            const nChild = rootNormals[childFaceIdx];
+            const uCVec = new THREE.Vector3().crossVectors(nChild, ex);
+            const uC = uCVec.lengthSq() > 1e-12 ? uCVec.normalize() : ez.clone();
+            const closedAngle = Math.atan2(uC.dot(ey), uC.dot(ez));
+
+            const hingePivot = new THREE.Group();
+            if (!parentFrame) {
+              hingePivot.position.set(M.x, 0, M.z);
+              hingePivot.rotation.y = Math.atan2(-ex.z, ex.x);
+            } else {
+              const relM = new THREE.Vector3().subVectors(M, parentFrame.M);
+              hingePivot.position.set(relM.dot(parentFrame.ex), 0, relM.dot(parentFrame.uC));
+              hingePivot.rotation.y = Math.atan2(-ex.dot(parentFrame.uC), ex.dot(parentFrame.ex));
+            }
+
+            const foldGroup = new THREE.Group();
+            hingePivot.add(foldGroup);
+            hingeControllers.push({ pivot: foldGroup, closedAngle: closedAngle });
+
+            const childNode = buildNode(childFaceIdx, {
+              M: M,
+              ex: ex,
+              uC: uC,
+              incomingEdgeVerts: [vAIdx, vBIdx]
+            });
+            foldGroup.add(childNode);
+            container.add(hingePivot);
+          });
+
+          return container;
+        }
+
+        return buildNode(rootFaceIdx, null);
+      }
+
+      // --- Specific Solid Builders ---
+      function buildBox(w, h, d) {
+        const hx = w / 2;
+        const hz = d / 2;
+        const vertices = [
+          new THREE.Vector3(-hx, 0, -hz), new THREE.Vector3( hx, 0, -hz),
+          new THREE.Vector3( hx, 0,  hz), new THREE.Vector3(-hx, 0,  hz),
+          new THREE.Vector3(-hx, h, -hz), new THREE.Vector3( hx, h, -hz),
+          new THREE.Vector3( hx, h,  hz), new THREE.Vector3(-hx, h,  hz)
+        ];
+        const faces = [
+          [0, 1, 2, 3], [1, 0, 4, 5], [2, 1, 5, 6],
+          [3, 2, 6, 7], [0, 3, 7, 4], [4, 7, 6, 5]
+        ];
+        return buildPolyhedronHingeTree(vertices, faces, 0, null, {});
+      }
+
+      function buildPrism(n, r, h, customSpan, options) {
+        const vertices = [];
+        for (let i = 0; i < n; i++) {
+          const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+          vertices.push(new THREE.Vector3(r * Math.cos(ang), 0, r * Math.sin(ang)));
+        }
+        for (let i = 0; i < n; i++) {
+          const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+          vertices.push(new THREE.Vector3(r * Math.cos(ang), h, r * Math.sin(ang)));
+        }
+        const faces = [];
+        const bottom = [];
+        for (let i = 0; i < n; i++) bottom.push(i);
+        faces.push(bottom);
+        for (let i = 0; i < n; i++) {
+          const next = (i + 1) % n;
+          faces.push([next, i, n + i, n + next]);
+        }
+        const top = [];
+        for (let i = n - 1; i >= 0; i--) top.push(n + i);
+        faces.push(top);
+
+        return buildPolyhedronHingeTree(vertices, faces, 0, customSpan || null, options || {});
+      }
+
+      function buildPyramid(n, r, h, customSpan, options) {
+        const vertices = [];
+        for (let i = 0; i < n; i++) {
+          const ang = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+          vertices.push(new THREE.Vector3(r * Math.cos(ang), 0, r * Math.sin(ang)));
+        }
+        vertices.push(new THREE.Vector3(0, h, 0));
+
+        const faces = [];
+        const base = [];
+        for (let i = 0; i < n; i++) base.push(i);
+        faces.push(base);
+        for (let i = 0; i < n; i++) {
+          const next = (i + 1) % n;
+          faces.push([next, i, n]);
+        }
+
+        return buildPolyhedronHingeTree(vertices, faces, 0, customSpan || null, options || {});
+      }
+
+      function buildCylinder(r, h) {
+        const N = 36;
+        const half = Math.floor(N / 2);
+        const span = [
+          [0, 1],
+          [1, N + 1]
+        ];
+        for (let i = 1; i < half; i++) {
+          span.push([i, i + 1]);
+        }
+        span.push([1, N]);
+        for (let i = N; i > half + 1; i--) {
+          span.push([i, i - 1]);
+        }
+        return buildPrism(N, r, h, span, { curvedLateral: true, lateralCount: N });
+      }
+
+      function buildCone(r, h) {
+        const N = 36;
+        const half = Math.floor(N / 2);
+        const span = [[0, 1]];
+        for (let i = 1; i < half; i++) {
+          span.push([i, i + 1]);
+        }
+        span.push([1, N]);
+        for (let i = N; i > half + 1; i--) {
+          span.push([i, i - 1]);
+        }
+        return buildPyramid(N, r, h, span, { curvedLateral: true, lateralCount: N });
+      }
+
+      function buildTetrahedron(a) {
+        const s = a / Math.sqrt(2);
+        const vertices = [
+          new THREE.Vector3( s,  s,  s), new THREE.Vector3( s, -s, -s),
+          new THREE.Vector3(-s,  s, -s), new THREE.Vector3(-s, -s,  s)
+        ];
+        const faces = [[0, 1, 2], [0, 3, 1], [0, 2, 3], [1, 3, 2]];
+        return buildPolyhedronHingeTree(vertices, faces, 0, null, {});
+      }
+
+      function buildOctahedron(a) {
+        const r = a / Math.sqrt(2);
+        const vertices = [
+          new THREE.Vector3( r, 0, 0), new THREE.Vector3(-r, 0, 0),
+          new THREE.Vector3(0,  r, 0), new THREE.Vector3(0, -r, 0),
+          new THREE.Vector3(0, 0,  r), new THREE.Vector3(0, 0, -r)
+        ];
+        const faces = [
+          [0, 2, 4], [4, 2, 1], [1, 2, 5], [5, 2, 0],
+          [4, 3, 0], [1, 3, 4], [5, 3, 1], [0, 3, 5]
+        ];
+        return buildPolyhedronHingeTree(vertices, faces, 0, null, {});
+      }
+
+      function buildDodecahedron(a) {
+        const phi = (1 + Math.sqrt(5)) / 2;
+        const invPhi = 1 / phi;
+        const scale = (a * phi) / 2;
+        const raw = [
+          [-1, -1, -1], [-1, -1,  1], [-1,  1, -1], [-1,  1,  1],
+          [ 1, -1, -1], [ 1, -1,  1], [ 1,  1, -1], [ 1,  1,  1],
+          [0, -invPhi, -phi], [0, -invPhi,  phi], [0,  invPhi, -phi], [0,  invPhi,  phi],
+          [-invPhi, -phi, 0], [-invPhi,  phi, 0], [ invPhi, -phi, 0], [ invPhi,  phi, 0],
+          [-phi, 0, -invPhi], [-phi, 0,  invPhi], [ phi, 0, -invPhi], [ phi, 0,  invPhi]
+        ];
+        const vertices = raw.map(function (pt) {
+          return new THREE.Vector3(pt[0] * scale, pt[1] * scale, pt[2] * scale);
+        });
+        const faces = [
+          [0, 8, 4, 14, 12], [0, 12, 1, 17, 16], [0, 16, 2, 10, 8],
+          [8, 10, 6, 18, 4], [4, 18, 19, 5, 14], [14, 5, 9, 1, 12],
+          [1, 9, 11, 3, 17], [3, 11, 7, 15, 13], [17, 3, 13, 2, 16],
+          [2, 13, 15, 6, 10], [6, 15, 7, 19, 18], [5, 19, 7, 11, 9]
+        ];
+        return buildPolyhedronHingeTree(vertices, faces, 0, null, {});
+      }
+
+      function buildIcosahedron(a) {
+        const phi = (1 + Math.sqrt(5)) / 2;
+        const s = a / 2;
+        const raw = [
+          [-1,  phi, 0], [ 1,  phi, 0], [-1, -phi, 0], [ 1, -phi, 0],
+          [0, -1,  phi], [0,  1,  phi], [0, -1, -phi], [0,  1, -phi],
+          [ phi, 0, -1], [ phi, 0,  1], [-phi, 0, -1], [-phi, 0,  1]
+        ];
+        const vertices = raw.map(function (pt) {
+          return new THREE.Vector3(pt[0] * s, pt[1] * s, pt[2] * s);
+        });
+        const faces = [
+          [0, 11, 5], [11, 2, 5], [5, 2, 4], [5, 4, 9], [1, 5, 9],
+          [1, 9, 8], [1, 8, 7], [7, 8, 6], [7, 6, 10], [0, 7, 10],
+          [0, 5, 1], [0, 1, 7], [0, 10, 11], [11, 10, 2], [2, 3, 4],
+          [4, 3, 9], [9, 3, 8], [8, 3, 6], [6, 3, 2], [6, 2, 10]
+        ];
+        return buildPolyhedronHingeTree(vertices, faces, 0, null, {});
+      }
+
+      let meshTree = null;
+      switch (catalogItem.id) {
+        case 'cube': meshTree = buildBox(p.a, p.a, p.a); break;
+        case 'cuboid': meshTree = buildBox(p.w, p.h, p.d); break;
+        case 'cylinder': meshTree = buildCylinder(p.r, p.h); break;
+        case 'cone': meshTree = buildCone(p.r, p.h); break;
+        case 'tetrahedron': meshTree = buildTetrahedron(p.a); break;
+        case 'octahedron': meshTree = buildOctahedron(p.a); break;
+        case 'dodecahedron': meshTree = buildDodecahedron(p.a); break;
+        case 'icosahedron': meshTree = buildIcosahedron(p.a); break;
+        default:
+          if (catalogItem.type === 'pyramid') meshTree = buildPyramid(catalogItem.n, p.r, p.h);
+          else if (catalogItem.type === 'prism') meshTree = buildPrism(catalogItem.n, p.r, p.h);
+          break;
+      }
+
+      solidInst.hingeControllers = hingeControllers;
+      solidInst.faceMaterials = faceMaterials;
+      solidInst.edgeMaterials = edgeMaterials;
+      solidInst.hingeMaterials = hingeMaterials;
+      return meshTree;
+    }
+
+    function applyColorToSolid(solidInst, hexColor) {
+      if (!solidInst) return;
+      solidInst.color = hexColor;
+      solidInst.faceColors = {};
+      solidInst.faceMaterials.forEach(function (entry) {
+        entry.mat.color.copy(getFacetShade(hexColor, entry.faceIdx, entry.uniformShade));
+      });
+    }
+
+    function paintClickedFace(solidInst, faceKey, hexColor) {
+      if (!solidInst || !faceKey) return;
+      if (!solidInst.faceColors) solidInst.faceColors = {};
+      solidInst.faceColors[faceKey] = hexColor;
+      solidInst.faceMaterials.forEach(function (entry) {
+        if (entry.faceKey === faceKey) {
+          entry.mat.color.copy(getFacetShade(hexColor, entry.faceIdx, entry.uniformShade));
+        }
+      });
+    }
+
+    function clearFaceColorOverrides(solidInst) {
+      if (!solidInst) return;
+      solidInst.faceColors = {};
+      solidInst.faceMaterials.forEach(function (entry) {
+        entry.mat.color.copy(resolveFaceColor(solidInst, entry.faceKey, entry.faceIdx, entry.uniformShade));
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // 7. SCENE SOLID MANAGEMENT, GROUND RING & SNAP HELPERS
+    // --------------------------------------------------------------------------
+    function round2(v) {
+      return Math.round(v * 100) / 100;
+    }
+
+    function snapVal(v) {
+      if (state.snapStep <= 0) return round2(v);
+      return round2(Math.round(v / state.snapStep) * state.snapStep);
+    }
+
+    function findFreeSpot() {
+      const step = 3.0;
+      const candidates = [
+        [0, 0], [step, 0], [-step, 0], [0, step], [0, -step],
+        [step, step], [-step, step], [step, -step], [-step, -step],
+        [step * 2, 0], [-step * 2, 0], [0, step * 2], [0, -step * 2]
+      ];
+      for (let idx = 0; idx < candidates.length; idx++) {
+        const sx = snapVal(candidates[idx][0]);
+        const sz = snapVal(candidates[idx][1]);
+        const taken = state.sceneSolids.some(function (s) {
+          return Math.abs(s.position.x - sx) < 1.2 && Math.abs(s.position.z - sz) < 1.2;
+        });
+        if (!taken) return { x: sx, y: 0, z: sz };
+      }
+      const i = state.sceneSolids.length;
+      return { x: snapVal(((i % 5) - 2) * 2.5), y: 0, z: snapVal(Math.floor(i / 5) * 2.5) };
+    }
+
+    function disposeGroup(group, parent) {
+      if (!group) return;
+      group.traverse(function (obj) {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) {
+            obj.material.forEach(function (m) { m.dispose(); });
+          } else {
+            obj.material.dispose();
+          }
+        }
+      });
+      if (parent) parent.remove(group);
+    }
+
+    function updateGroundGuide(solidInst) {
+      disposeGroup(solidInst.groundGuideGroup, scene);
+      solidInst.groundGuideGroup = null;
+
+      if (solidInst.id !== state.selectedSolidId) return;
+
+      const guide = new THREE.Group();
+
+      const ringGeo = new THREE.RingGeometry(1.15, 1.26, 48);
+      ringGeo.rotateX(-Math.PI / 2);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.85
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.set(solidInst.position.x, 0.006, solidInst.position.z);
+      guide.add(ring);
+
+      if (solidInst.position.y > 0.005) {
+        const pts = [
+          new THREE.Vector3(solidInst.position.x, 0.006, solidInst.position.z),
+          new THREE.Vector3(solidInst.position.x, solidInst.position.y, solidInst.position.z)
+        ];
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+        const lineMat = new THREE.LineDashedMaterial({
+          color: 0x818cf8,
+          dashSize: 0.16,
+          gapSize: 0.1,
+          transparent: true,
+          opacity: 0.92
+        });
+        const line = new THREE.Line(lineGeo, lineMat);
+        line.computeLineDistances();
+        guide.add(line);
+      }
+
+      solidInst.groundGuideGroup = guide;
+      scene.add(guide);
+    }
+
+    function rebuildSolidInstance(solidInst) {
+      disposeGroup(solidInst.rootGroup, assemblyGroup);
+
+      const rootGroup = new THREE.Group();
+      rootGroup.position.set(solidInst.position.x, solidInst.position.y, solidInst.position.z);
+      rootGroup.rotation.set(
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.x),
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.y),
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.z)
+      );
+
+      const tree = buildSolidGeometryTree(solidInst);
+      if (tree) rootGroup.add(tree);
+
+      solidInst.rootGroup = rootGroup;
+      assemblyGroup.add(rootGroup);
+
+      applySolidUnfold(solidInst, solidInst.unfoldProgress);
+      updateGroundGuide(solidInst);
+    }
+
+    function applySolidUnfold(solidInst, t) {
+      solidInst.unfoldProgress = Math.max(0, Math.min(1, t));
+      const closedFactor = 1 - solidInst.unfoldProgress;
+      for (let i = 0; i < solidInst.hingeControllers.length; i++) {
+        const ctrl = solidInst.hingeControllers[i];
+        ctrl.pivot.rotation.x = -(closedFactor * ctrl.closedAngle);
+      }
+    }
+
+    function getSelectedSolid() {
+      return state.sceneSolids.find(function (s) { return s.id === state.selectedSolidId; }) || null;
+    }
+
+    function addSolidToScene(typeId, customPos, customParams, customColor, customRot, customFaceColors) {
+      const cat = SOLID_CATALOG.find(function (s) { return s.id === typeId; });
+      if (!cat) return null;
+
+      const params = {};
+      cat.params.forEach(function (p) {
+        params[p.key] = (customParams && customParams[p.key] !== undefined) ? customParams[p.key] : p.default;
+      });
+
+      const pos = customPos ? { x: customPos.x, y: customPos.y, z: customPos.z } : findFreeSpot();
+      const color = customColor || CAD_COLORS[(state.nextSolidNum - 1) % CAD_COLORS.length].hex;
+      const rotationDeg = customRot ? { x: customRot.x, y: customRot.y, z: customRot.z } : { x: 0, y: 0, z: 0 };
+      const faceColors = customFaceColors ? Object.assign({}, customFaceColors) : {};
+
+      const num = state.nextSolidNum++;
+      const inst = {
+        id: 'solid_' + num,
+        num: num,
+        name: cat.shortLabel + ' #' + num,
+        typeId: typeId,
+        params: params,
+        position: pos,
+        rotationDeg: rotationDeg,
+        color: color,
+        faceColors: faceColors,
+        unfoldProgress: 0,
+        rootGroup: null,
+        groundGuideGroup: null,
+        hingeControllers: [],
+        faceMaterials: [],
+        edgeMaterials: [],
+        hingeMaterials: []
+      };
+
+      state.sceneSolids.push(inst);
+      rebuildSolidInstance(inst);
+      selectSolid(inst.id);
+      return inst;
+    }
+
+    function replaceSelectedSolid(typeId) {
+      const sel = getSelectedSolid();
+      if (!sel) {
+        addSolidToScene(typeId);
+        return;
+      }
+      const cat = SOLID_CATALOG.find(function (s) { return s.id === typeId; });
+      if (!cat) return;
+
+      const params = {};
+      cat.params.forEach(function (p) { params[p.key] = p.default; });
+
+      sel.typeId = typeId;
+      sel.name = cat.shortLabel + ' #' + sel.num;
+      sel.params = params;
+      sel.faceColors = {};
+      rebuildSolidInstance(sel);
+      syncAllUI();
+    }
+
+    function selectSolid(solidId) {
+      state.selectedSolidId = solidId;
+      state.sceneSolids.forEach(function (s) {
+        const isSel = s.id === solidId;
+        s.edgeMaterials.forEach(function (m) {
+          m.color.setHex(isSel ? 0xffffff : 0x0b1120);
+          m.opacity = isSel ? 0.96 : 0.8;
+        });
+        s.hingeMaterials.forEach(function (m) {
+          m.color.setHex(isSel ? 0x7dd3fc : 0x38bdf8);
+        });
+        updateGroundGuide(s);
+      });
+      syncAllUI();
+    }
+
+    function toggleSelectSolid(solidId) {
+      if (state.selectedSolidId === solidId) {
+        selectSolid(null);
+      } else {
+        selectSolid(solidId);
+      }
+    }
+
+    function updateSolidTransform(solidInst) {
+      if (!solidInst || !solidInst.rootGroup) return;
+      solidInst.rootGroup.position.set(solidInst.position.x, solidInst.position.y, solidInst.position.z);
+      solidInst.rootGroup.rotation.set(
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.x),
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.y),
+        THREE.MathUtils.degToRad(solidInst.rotationDeg.z)
+      );
+      updateGroundGuide(solidInst);
+      updateCoordsHUD();
+    }
+
+    // --------------------------------------------------------------------------
+    // 8. MOUSE SELECTION TOGGLE, FACE PAINTING, EMPTY DESELECT & DRAGGING
+    // --------------------------------------------------------------------------
+    function setPointerNDC(e) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointerNDC.x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+      pointerNDC.y = -((e.clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1;
+    }
+
+    function raycastSolidHit() {
+      raycaster.setFromCamera(pointerNDC, activeCamera);
+      const roots = state.sceneSolids.map(function (s) { return s.rootGroup; }).filter(Boolean);
+      const hits = raycaster.intersectObjects(roots, true);
+      if (!hits.length) return null;
+
+      for (let i = 0; i < hits.length; i++) {
+        let obj = hits[i].object;
+        const faceKey = obj.userData ? obj.userData.faceKey : null;
+        while (obj && !obj.userData.solidInstanceId) {
+          obj = obj.parent;
+        }
+        if (obj) {
+          const solid = state.sceneSolids.find(function (s) {
+            return s.id === obj.userData.solidInstanceId;
+          });
+          if (solid) return { solid: solid, faceKey: faceKey };
+        }
+      }
+      return null;
+    }
+
+    function setupDragPlane(solidInst, verticalMode) {
+      dragState.verticalMode = verticalMode;
+      const posVec = new THREE.Vector3(solidInst.position.x, solidInst.position.y, solidInst.position.z);
+
+      if (!verticalMode) {
+        dragState.dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), posVec);
+      } else {
+        const camDir = new THREE.Vector3();
+        activeCamera.getWorldDirection(camDir);
+        camDir.y = 0;
+        if (camDir.lengthSq() < 1e-5) camDir.set(0, 0, 1);
+        camDir.normalize();
+        dragState.dragPlane.setFromNormalAndCoplanarPoint(camDir, posVec);
+      }
+
+      raycaster.setFromCamera(pointerNDC, activeCamera);
+      const hitPt = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(dragState.dragPlane, hitPt)) {
+        dragState.dragOffset.subVectors(hitPt, posVec);
+      } else {
+        dragState.dragOffset.set(0, 0, 0);
+      }
+    }
+
+    function onCanvasPointerDown(e) {
+      if (e.button !== 0) return;
+      setPointerNDC(e);
+      dragState.pointerDownX = e.clientX;
+      dragState.pointerDownY = e.clientY;
+
+      const hit = raycastSolidHit();
+      if (hit && hit.solid) {
+        dragState.pointerDownHitSolid = hit;
+        const targetSolid = hit.solid;
+
+        if (state.paintTarget === 'face' && hit.faceKey) {
+          if (state.selectedSolidId !== targetSolid.id) {
+            selectSolid(targetSolid.id);
+          }
+          paintClickedFace(targetSolid, hit.faceKey, state.activeColor);
+        } else if (state.selectedSolidId !== targetSolid.id) {
+          selectSolid(targetSolid.id);
+        }
+
+        if (state.selectedSolidId === targetSolid.id) {
+          dragState.isDragging = true;
+          dragState.solid = targetSolid;
+          controls.enabled = false;
+          setupDragPlane(targetSolid, e.shiftKey);
+          document.getElementById('viewport').classList.add('dragging-solid');
+          updateCoordsHUD();
+        }
+      } else {
+        dragState.pointerDownHitSolid = null;
+      }
+    }
+
+    function onWindowPointerMove(e) {
+      if (!renderer) return;
+      setPointerNDC(e);
+
+      if (dragState.isDragging && dragState.solid) {
+        if (e.shiftKey !== dragState.verticalMode) {
+          setupDragPlane(dragState.solid, e.shiftKey);
+        }
+        raycaster.setFromCamera(pointerNDC, activeCamera);
+        const hitPt = new THREE.Vector3();
+        if (raycaster.ray.intersectPlane(dragState.dragPlane, hitPt)) {
+          const s = dragState.solid;
+          if (!dragState.verticalMode) {
+            s.position.x = snapVal(hitPt.x - dragState.dragOffset.x);
+            s.position.z = snapVal(hitPt.z - dragState.dragOffset.z);
+          } else {
+            const rawY = Math.max(0, hitPt.y - dragState.dragOffset.y);
+            s.position.y = Math.max(0, snapVal(rawY));
+            syncElevationUI();
+          }
+          updateSolidTransform(s);
+        }
+        return;
+      }
+
+      const vp = document.getElementById('viewport');
+      const rect = renderer.domElement.getBoundingClientRect();
+      const inside =
+        e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top && e.clientY <= rect.bottom;
+
+      if (inside) {
+        const hit = raycastSolidHit();
+        vp.classList.toggle('hover-paint', Boolean(hit && state.paintTarget === 'face'));
+        vp.classList.toggle('hover-solid', Boolean(hit && state.paintTarget !== 'face'));
+      } else {
+        vp.classList.remove('hover-solid');
+        vp.classList.remove('hover-paint');
+      }
+    }
+
+    function onWindowPointerUp(e) {
+      const wasDragging = dragState.isDragging;
+      if (dragState.isDragging) {
+        dragState.isDragging = false;
+        dragState.solid = null;
+        controls.enabled = true;
+        document.getElementById('viewport').classList.remove('dragging-solid');
+        updateCoordsHUD();
+      }
+
+      if (e && e.type === 'pointerup' && e.button === 0) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        const inside =
+          e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom;
+        const dist = Math.hypot(e.clientX - dragState.pointerDownX, e.clientY - dragState.pointerDownY);
+
+        if (inside && dist < 5) {
+          if (dragState.pointerDownHitSolid && dragState.pointerDownHitSolid.solid) {
+            if (!wasDragging && state.paintTarget !== 'face') {
+              const clickedId = dragState.pointerDownHitSolid.solid.id;
+              if (state.selectedSolidId === clickedId) {
+                selectSolid(null);
+              }
+            }
+          } else if (state.selectedSolidId !== null) {
+            selectSolid(null);
+          }
+        }
+      }
+      dragState.pointerDownHitSolid = null;
+    }
+
+    // --------------------------------------------------------------------------
+    // 9. STACKING, DUPLICATION, DELETION & ARROW KEY NUDGING
+    // --------------------------------------------------------------------------
+    function stackSelectedOnTop() {
+      const sel = getSelectedSolid();
+      if (!sel || state.sceneSolids.length < 2) return;
+
+      assemblyGroup.updateMatrixWorld(true);
+      const selBox = new THREE.Box3().setFromObject(sel.rootGroup);
+
+      let overlapMaxY = -Infinity;
+      let highestSolid = null;
+      let highestTopY = -Infinity;
+
+      state.sceneSolids.forEach(function (other) {
+        if (other.id === sel.id || !other.rootGroup) return;
+        const box = new THREE.Box3().setFromObject(other.rootGroup);
+        if (box.max.y > highestTopY) {
+          highestTopY = box.max.y;
+          highestSolid = other;
+        }
+        const ovX = selBox.max.x > box.min.x + 0.05 && selBox.min.x < box.max.x - 0.05;
+        const ovZ = selBox.max.z > box.min.z + 0.05 && selBox.min.z < box.max.z - 0.05;
+        if (ovX && ovZ && box.max.y > overlapMaxY) {
+          overlapMaxY = box.max.y;
+        }
+      });
+
+      const bottomOffset = selBox.min.y - sel.position.y;
+      if (overlapMaxY > -Infinity) {
+        sel.position.y = Math.max(0, round2(overlapMaxY - bottomOffset));
+      } else if (highestSolid) {
+        sel.position.x = highestSolid.position.x;
+        sel.position.z = highestSolid.position.z;
+        sel.position.y = Math.max(0, round2(highestTopY - bottomOffset));
+      }
+
+      updateSolidTransform(sel);
+      syncElevationUI();
+    }
+
+    function dropSelectedToFloor() {
+      const sel = getSelectedSolid();
+      if (!sel) return;
+      if (sel.rotationDeg.x === 0 && sel.rotationDeg.z === 0) {
+        sel.position.y = 0;
+      } else {
+        assemblyGroup.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(sel.rootGroup);
+        sel.position.y = Math.max(0, round2(sel.position.y - box.min.y));
+      }
+      updateSolidTransform(sel);
+      syncElevationUI();
+    }
+
+    function duplicateSelectedSolid() {
+      const sel = getSelectedSolid();
+      if (!sel) return;
+      const offset = Math.max(1.0, (state.snapStep > 0 ? state.snapStep : 0.5) * 2);
+      const pos = {
+        x: snapVal(sel.position.x + offset),
+        y: sel.position.y,
+        z: snapVal(sel.position.z)
+      };
+      const clone = addSolidToScene(sel.typeId, pos, sel.params, sel.color, sel.rotationDeg, sel.faceColors);
+      if (clone && sel.unfoldProgress > 0) {
+        applySolidUnfold(clone, sel.unfoldProgress);
+        syncUnfoldUI();
+      }
+    }
+
+    function deleteSelectedSolid() {
+      const sel = getSelectedSolid();
+      if (!sel) return;
+      disposeGroup(sel.rootGroup, assemblyGroup);
+      disposeGroup(sel.groundGuideGroup, scene);
+      state.sceneSolids = state.sceneSolids.filter(function (s) { return s.id !== sel.id; });
+      const next = state.sceneSolids[state.sceneSolids.length - 1] || null;
+      selectSolid(next ? next.id : null);
+    }
+
+    function clearAllSolids() {
+      state.sceneSolids.forEach(function (s) {
+        disposeGroup(s.rootGroup, assemblyGroup);
+        disposeGroup(s.groundGuideGroup, scene);
+      });
+      state.sceneSolids = [];
+      state.selectedSolidId = null;
+      state.nextSolidNum = 1;
+      syncAllUI();
+    }
+
+    function nudgeSelectedByArrowKey(key, shiftKey) {
+      const sel = getSelectedSolid();
+      if (!sel) return false;
+
+      const step = state.snapStep > 0 ? state.snapStep : 0.25;
+
+      if (shiftKey && (key === 'ArrowUp' || key === 'ArrowDown')) {
+        const deltaY = key === 'ArrowUp' ? step : -step;
+        sel.position.y = Math.max(0, snapVal(sel.position.y + deltaY));
+        updateSolidTransform(sel);
+        syncElevationUI();
+        return true;
+      }
+
+      const camFwd = new THREE.Vector3();
+      activeCamera.getWorldDirection(camFwd);
+      camFwd.y = 0;
+      if (camFwd.lengthSq() < 1e-6) {
+        camFwd.set(0, 0, -1);
+      } else {
+        camFwd.normalize();
+      }
+
+      const cardFwd = Math.abs(camFwd.x) >= Math.abs(camFwd.z)
+        ? new THREE.Vector3(Math.sign(camFwd.x) || 1, 0, 0)
+        : new THREE.Vector3(0, 0, Math.sign(camFwd.z) || -1);
+      const cardRight = new THREE.Vector3().crossVectors(cardFwd, new THREE.Vector3(0, 1, 0));
+
+      const move = new THREE.Vector3();
+      if (key === 'ArrowUp') move.copy(cardFwd).multiplyScalar(step);
+      else if (key === 'ArrowDown') move.copy(cardFwd).multiplyScalar(-step);
+      else if (key === 'ArrowRight') move.copy(cardRight).multiplyScalar(step);
+      else if (key === 'ArrowLeft') move.copy(cardRight).multiplyScalar(-step);
+      else return false;
+
+      sel.position.x = snapVal(sel.position.x + move.x);
+      sel.position.z = snapVal(sel.position.z + move.z);
+      updateSolidTransform(sel);
+      return true;
+    }
+
+    // --------------------------------------------------------------------------
+    // 10. PLANIFICATION (OPEN MESH) ANIMATION
+    // --------------------------------------------------------------------------
+    function easeInOutCubic(x) {
+      return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+    }
+
+    function getUnfoldTargets() {
+      if (state.unfoldScope === 'all') return state.sceneSolids;
+      const sel = getSelectedSolid();
+      return sel ? [sel] : [];
+    }
+
+    function toggleUnfoldAnimation() {
+      const targets = getUnfoldTargets();
+      if (!targets.length) return;
+      const avg = targets.reduce(function (acc, s) { return acc + s.unfoldProgress; }, 0) / targets.length;
+      const nextGoal = avg >= 0.5 ? 0 : 1;
+
+      state.animTargets = targets.map(function (s) {
+        return {
+          solid: s,
+          startVal: s.unfoldProgress,
+          targetVal: nextGoal
+        };
+      });
+      state.animStartTime = performance.now();
+      state.isAnimatingUnfold = true;
+    }
+
+    function setManualUnfold(t) {
+      state.isAnimatingUnfold = false;
+      getUnfoldTargets().forEach(function (s) { applySolidUnfold(s, t); });
+      syncUnfoldUI();
+    }
+
+    // --------------------------------------------------------------------------
+    // 11. UI RENDERING & SYNCHRONIZATION
+    // --------------------------------------------------------------------------
+    function renderLibraryGrid() {
+      const grid = document.getElementById('solids-grid');
+      grid.innerHTML = '';
+      const sel = getSelectedSolid();
+
+      const items = SOLID_CATALOG.filter(function (item) {
+        return state.libraryCategory === 'all' || item.category === state.libraryCategory;
+      });
+
+      items.forEach(function (item) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'solid-btn' + (sel && sel.typeId === item.id ? ' active-type' : '');
+        btn.title = state.libraryMode === 'add'
+          ? ('Add ' + item.name + ' to Scene')
+          : ('Replace Selected with ' + item.name);
+        btn.innerHTML = item.svg + '<span>' + item.shortLabel + '</span>';
+        btn.addEventListener('click', function () {
+          if (state.libraryMode === 'add') addSolidToScene(item.id);
+          else replaceSelectedSolid(item.id);
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function renderSceneChips() {
+      const container = document.getElementById('scene-objects-chips');
+      container.innerHTML = '';
+
+      if (!state.sceneSolids.length) {
+        container.innerHTML = '<span style="font-size:11px;color:#64748b;font-style:italic;">Scene empty — click a solid above to add</span>';
+        return;
+      }
+
+      state.sceneSolids.forEach(function (s) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'scene-chip' + (s.id === state.selectedSolidId ? ' selected' : '');
+        btn.innerHTML = '<span class="chip-dot" style="background:' + s.color + '"></span><span>' + s.name + '</span>';
+        btn.addEventListener('click', function () { toggleSelectSolid(s.id); });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderDimensions() {
+      const container = document.getElementById('dimensions-container');
+      container.innerHTML = '';
+      const sel = getSelectedSolid();
+
+      if (!sel) {
+        container.innerHTML = '<span style="font-size:11px;color:#64748b;">Select a solid to adjust dimensions.</span>';
+        return;
+      }
+
+      const cat = SOLID_CATALOG.find(function (item) { return item.id === sel.typeId; });
+      cat.params.forEach(function (spec) {
+        const val = sel.params[spec.key];
+        const group = document.createElement('div');
+        group.className = 'slider-group';
+
+        const row = document.createElement('div');
+        row.className = 'slider-label-row';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'slider-label';
+        lbl.textContent = spec.label;
+
+        const badge = document.createElement('span');
+        badge.className = 'slider-val';
+        badge.textContent = Number(val).toFixed(2);
+
+        row.appendChild(lbl);
+        row.appendChild(badge);
+
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.className = 'cad-slider';
+        slider.min = spec.min;
+        slider.max = spec.max;
+        slider.step = spec.step;
+        slider.value = val;
+
+        slider.addEventListener('input', function (e) {
+          const num = parseFloat(e.target.value);
+          sel.params[spec.key] = num;
+          badge.textContent = num.toFixed(2);
+          rebuildSolidInstance(sel);
+          updateMetricsUI();
+        });
+
+        group.appendChild(row);
+        group.appendChild(slider);
+        container.appendChild(group);
+      });
+    }
+
+    function renderColorSwatches() {
+      const container = document.getElementById('color-swatches');
+      container.innerHTML = '';
+      const sel = getSelectedSolid();
+      const activeHex = state.activeColor.toLowerCase();
+
+      CAD_COLORS.forEach(function (c) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.title = c.name;
+        btn.style.backgroundColor = c.hex;
+        const isMatched =
+          activeHex === c.hex.toLowerCase() ||
+          (state.paintTarget === 'solid' && sel && sel.color.toLowerCase() === c.hex.toLowerCase());
+        btn.className = 'swatch-btn' + (isMatched ? ' active' : '');
+        btn.addEventListener('click', function () {
+          chooseColor(c.hex);
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function chooseColor(hex) {
+      const normalized = hex.toLowerCase();
+      state.activeColor = normalized;
+      document.getElementById('custom-color-picker').value = normalized;
+      document.getElementById('val-color-hex').textContent = normalized.toUpperCase();
+
+      const sel = getSelectedSolid();
+      if (sel && state.paintTarget === 'solid') {
+        applyColorToSolid(sel, normalized);
+      }
+      renderColorSwatches();
+      renderSceneChips();
+    }
+
+    function setPaintTarget(target) {
+      state.paintTarget = target;
+      const btnSolid = document.getElementById('paint-target-solid');
+      const btnFace = document.getElementById('paint-target-face');
+      const hint = document.getElementById('face-paint-hint');
+
+      btnSolid.className = 'seg-btn' + (target === 'solid' ? ' active' : '');
+      btnFace.className = 'seg-btn' + (target === 'face' ? ' active-emerald' : '');
+      hint.style.display = target === 'face' ? 'block' : 'none';
+      renderColorSwatches();
+      updateCoordsHUD();
+    }
+
+    function updateMetricsUI() {
+      const sel = getSelectedSolid();
+      if (!sel) {
+        document.getElementById('stat-faces').textContent = '—';
+        document.getElementById('stat-edges').textContent = '—';
+        document.getElementById('stat-vertices').textContent = '—';
+        document.getElementById('stat-area').textContent = '0.00 u²';
+        document.getElementById('stat-volume').textContent = '0.00 u³';
+        document.getElementById('euler-badge').textContent = 'No Selection';
+        return;
+      }
+
+      const cat = SOLID_CATALOG.find(function (item) { return item.id === sel.typeId; });
+      const m = cat.getMetrics(sel.params);
+      document.getElementById('stat-faces').textContent = m.F;
+      document.getElementById('stat-edges').textContent = m.E;
+      document.getElementById('stat-vertices').textContent = m.V;
+      document.getElementById('stat-area').textContent = m.area.toFixed(2) + ' u²';
+      document.getElementById('stat-volume').textContent = m.volume.toFixed(2) + ' u³';
+      document.getElementById('euler-badge').textContent = m.note ? m.note : ('V−E+F = ' + (m.V - m.E + m.F));
+    }
+
+    function syncElevationUI() {
+      const sel = getSelectedSolid();
+      const y = sel ? sel.position.y : 0;
+      const slider = document.getElementById('slider-elev-y');
+      if (y > parseFloat(slider.max)) slider.max = Math.ceil(y + 2);
+      slider.value = y;
+      document.getElementById('val-elev-y').textContent = y.toFixed(2);
+    }
+
+    function syncRotationUI() {
+      const sel = getSelectedSolid();
+      const rx = sel ? sel.rotationDeg.x : 0;
+      const ry = sel ? sel.rotationDeg.y : 0;
+      const rz = sel ? sel.rotationDeg.z : 0;
+      document.getElementById('slider-rot-x').value = rx;
+      document.getElementById('slider-rot-y').value = ry;
+      document.getElementById('slider-rot-z').value = rz;
+      document.getElementById('val-rot-x').textContent = rx + '°';
+      document.getElementById('val-rot-y').textContent = ry + '°';
+      document.getElementById('val-rot-z').textContent = rz + '°';
+    }
+
+    function syncUnfoldUI() {
+      const targets = getUnfoldTargets();
+      const avg = targets.length
+        ? targets.reduce(function (sum, s) { return sum + s.unfoldProgress; }, 0) / targets.length
+        : 0;
+      document.getElementById('slider-unfold').value = (avg * 100).toFixed(1);
+      document.getElementById('val-unfold-pct').textContent = Math.round(avg * 100) + '%';
+      document.getElementById('btn-unfold-toggle').textContent =
+        avg >= 0.5 ? 'Close Mesh (3D Solid)' : 'Open Mesh (Planification)';
+    }
+
+    function updateCoordsHUD() {
+      const sel = getSelectedSolid();
+      const pill = document.getElementById('coords-pill');
+      const dot = document.getElementById('coords-dot');
+      const nameEl = document.getElementById('coords-name');
+      const xyzEl = document.getElementById('coords-xyz');
+      const snapTag = document.getElementById('coords-snap-tag');
+
+      if (state.paintTarget === 'face') {
+        snapTag.textContent = 'Paint: Face';
+        snapTag.className = 'snap-pill-tag paint';
+      } else {
+        snapTag.textContent = state.snapStep > 0 ? ('Snap ' + state.snapStep.toFixed(2)) : 'Snap Off';
+        snapTag.className = 'snap-pill-tag';
+      }
+
+      if (!sel) {
+        nameEl.textContent = 'No Selection';
+        xyzEl.textContent = '(—, —, —)';
+        dot.className = 'status-dot idle';
+        pill.classList.remove('dragging');
+        return;
+      }
+
+      const modeTag = dragState.isDragging ? (dragState.verticalMode ? ' [Y]' : ' [XZ]') : '';
+      nameEl.textContent = sel.name + modeTag;
+      xyzEl.textContent = '(' + sel.position.x.toFixed(2) + ', ' + sel.position.y.toFixed(2) + ', ' + sel.position.z.toFixed(2) + ')';
+      dot.className = dragState.isDragging ? 'status-dot drag' : 'status-dot';
+      pill.classList.toggle('dragging', dragState.isDragging);
+    }
+
+    function syncAllUI() {
+      const count = state.sceneSolids.length;
+      document.getElementById('assembly-count-badge').textContent = count + (count === 1 ? ' Solid' : ' Solids');
+      const sel = getSelectedSolid();
+      document.getElementById('selected-solid-label').textContent = sel ? sel.name : 'None';
+      if (sel && state.paintTarget === 'solid') {
+        state.activeColor = sel.color.toLowerCase();
+      }
+      document.getElementById('custom-color-picker').value = state.activeColor;
+      document.getElementById('val-color-hex').textContent = state.activeColor.toUpperCase();
+
+      renderLibraryGrid();
+      renderSceneChips();
+      renderDimensions();
+      renderColorSwatches();
+      updateMetricsUI();
+      syncElevationUI();
+      syncRotationUI();
+      syncUnfoldUI();
+      updateCoordsHUD();
+    }
+
+    // --------------------------------------------------------------------------
+    // 12. EVENT LISTENERS & KEYBOARD CONTROLS
+    // --------------------------------------------------------------------------
+    function bindUIEvents() {
+      const btnAdd = document.getElementById('mode-add-btn');
+      const btnRep = document.getElementById('mode-replace-btn');
+      btnAdd.addEventListener('click', function () {
+        state.libraryMode = 'add';
+        btnAdd.className = 'seg-btn active';
+        btnRep.className = 'seg-btn';
+        renderLibraryGrid();
+      });
+      btnRep.addEventListener('click', function () {
+        state.libraryMode = 'replace';
+        btnRep.className = 'seg-btn active-indigo';
+        btnAdd.className = 'seg-btn';
+        renderLibraryGrid();
+      });
+
+      document.querySelectorAll('.cat-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          state.libraryCategory = pill.dataset.cat;
+          document.querySelectorAll('.cat-pill').forEach(function (p) {
+            p.classList.toggle('active', p.dataset.cat === state.libraryCategory);
+          });
+          renderLibraryGrid();
+        });
+      });
+
+      document.getElementById('btn-duplicate').addEventListener('click', duplicateSelectedSolid);
+      document.getElementById('btn-delete').addEventListener('click', deleteSelectedSolid);
+      document.getElementById('btn-clear-all').addEventListener('click', clearAllSolids);
+
+      document.getElementById('btn-reset-dims').addEventListener('click', function () {
+        const sel = getSelectedSolid();
+        if (!sel) return;
+        const cat = SOLID_CATALOG.find(function (item) { return item.id === sel.typeId; });
+        cat.params.forEach(function (p) { sel.params[p.key] = p.default; });
+        rebuildSolidInstance(sel);
+        updateMetricsUI();
+      });
+
+      document.getElementById('btn-unfold-toggle').addEventListener('click', toggleUnfoldAnimation);
+      document.getElementById('slider-unfold').addEventListener('input', function (e) {
+        setManualUnfold(parseFloat(e.target.value) / 100);
+      });
+
+      const scopeSel = document.getElementById('scope-selected-btn');
+      const scopeAll = document.getElementById('scope-all-btn');
+      scopeSel.addEventListener('click', function () {
+        state.unfoldScope = 'selected';
+        scopeSel.className = 'seg-btn active';
+        scopeAll.className = 'seg-btn';
+        syncUnfoldUI();
+      });
+      scopeAll.addEventListener('click', function () {
+        state.unfoldScope = 'all';
+        scopeAll.className = 'seg-btn active-indigo';
+        scopeSel.className = 'seg-btn';
+        syncUnfoldUI();
+      });
+
+      document.getElementById('btn-xray').addEventListener('click', function () {
+        state.xrayMode = !state.xrayMode;
+        const btn = document.getElementById('btn-xray');
+        btn.textContent = state.xrayMode ? 'X-Ray: On' : 'X-Ray: Off';
+        btn.classList.toggle('active-toggle', state.xrayMode);
+        state.sceneSolids.forEach(function (s) {
+          s.faceMaterials.forEach(function (entry) {
+            entry.mat.transparent = state.xrayMode;
+            entry.mat.opacity = state.xrayMode ? 0.4 : 1.0;
+            entry.mat.depthWrite = !state.xrayMode;
+            entry.mat.needsUpdate = true;
+          });
+        });
+      });
+
+      document.getElementById('select-snap-step').addEventListener('change', function (e) {
+        state.snapStep = parseFloat(e.target.value);
+        updateCoordsHUD();
+      });
+
+      document.getElementById('slider-elev-y').addEventListener('input', function (e) {
+        const sel = getSelectedSolid();
+        if (!sel) return;
+        const val = parseFloat(e.target.value);
+        sel.position.y = state.snapStep > 0 ? Math.max(0, snapVal(val)) : val;
+        document.getElementById('val-elev-y').textContent = sel.position.y.toFixed(2);
+        updateSolidTransform(sel);
+      });
+
+      document.getElementById('btn-drop-floor').addEventListener('click', dropSelectedToFloor);
+      document.getElementById('btn-stack-top').addEventListener('click', stackSelectedOnTop);
+
+      ['x', 'y', 'z'].forEach(function (axis) {
+        document.getElementById('slider-rot-' + axis).addEventListener('input', function (e) {
+          const sel = getSelectedSolid();
+          if (!sel) return;
+          const deg = parseInt(e.target.value, 10) || 0;
+          sel.rotationDeg[axis] = deg;
+          document.getElementById('val-rot-' + axis).textContent = deg + '°';
+          updateSolidTransform(sel);
+        });
+      });
+
+      document.getElementById('btn-reset-rot').addEventListener('click', function () {
+        const sel = getSelectedSolid();
+        if (!sel) return;
+        sel.rotationDeg = { x: 0, y: 0, z: 0 };
+        syncRotationUI();
+        updateSolidTransform(sel);
+      });
+
+      document.getElementById('paint-target-solid').addEventListener('click', function () { setPaintTarget('solid'); });
+      document.getElementById('paint-target-face').addEventListener('click', function () { setPaintTarget('face'); });
+      document.getElementById('custom-color-picker').addEventListener('input', function (e) {
+        chooseColor(e.target.value);
+      });
+      document.getElementById('btn-clear-face-colors').addEventListener('click', function () {
+        const sel = getSelectedSolid();
+        if (!sel) return;
+        clearFaceColorOverrides(sel);
+      });
+
+      document.getElementById('btn-cam-free').addEventListener('click', function () { setCameraMode('free'); });
+      document.getElementById('btn-cam-iso').addEventListener('click', function () { setCameraMode('iso'); });
+      document.getElementById('btn-top-plan').addEventListener('click', alignTopPlanView);
+      document.getElementById('btn-reset-view').addEventListener('click', resetCamera);
+
+      const sidebar = document.getElementById('sidebar');
+      document.getElementById('btn-open-sidebar').addEventListener('click', function () { sidebar.classList.add('open'); });
+      document.getElementById('btn-close-sidebar').addEventListener('click', function () { sidebar.classList.remove('open'); });
+
+      window.addEventListener('keydown', function (e) {
+        const active = document.activeElement;
+        const tag = active ? active.tagName : '';
+        if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+          e.preventDefault();
+          duplicateSelectedSolid();
+          return;
+        }
+
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (getSelectedSolid()) {
+            e.preventDefault();
+            deleteSelectedSolid();
+          }
+          return;
+        }
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          if (nudgeSelectedByArrowKey(e.key, e.shiftKey)) {
+            e.preventDefault();
+          }
+        }
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // 13. RENDER LOOP & BOOTSTRAP
+    // --------------------------------------------------------------------------
+    function animate(now) {
+      requestAnimationFrame(animate);
+
+      if (state.isAnimatingUnfold && state.animTargets.length > 0) {
+        const ratio = Math.min(1, (now - state.animStartTime) / state.animDuration);
+        const eased = easeInOutCubic(ratio);
+        state.animTargets.forEach(function (item) {
+          const val = item.startVal + (item.targetVal - item.startVal) * eased;
+          applySolidUnfold(item.solid, val);
+        });
+        syncUnfoldUI();
+        if (ratio >= 1) {
+          state.isAnimatingUnfold = false;
+        }
+      }
+
+      if (controls) controls.update();
+      if (renderer && scene && activeCamera) {
+        renderer.render(scene, activeCamera);
+        if (!state.firstFrameRendered) {
+          state.firstFrameRendered = true;
+          const badge = document.getElementById('engine-status-badge');
+          if (badge) badge.classList.add('hidden');
+        }
+      }
+    }
+
+    function bootstrap() {
+      try {
+        initThree();
+        bindUIEvents();
+        addSolidToScene('cube', { x: 0, y: 0, z: 0 });
+        handleResize();
+        requestAnimationFrame(animate);
+      } catch (err) {
+        showErrorBanner(err);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+  </script>
+</body>
+</html>
