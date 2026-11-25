@@ -1,6 +1,7 @@
 {%- comment -%}
   Área da escola = página /escola/, tudo abaixo de /escola/ e os avisos (artigos com programas: [escola]).
-  Nessa área não aparecem links de contato nem de agendamento de aulas particulares.
+  Nessa área não aparecem links de contato nem de agendamento de aulas particulares,
+  e IB, IGCSE, SAT e ENEM aparecem no menu só como texto (sem link).
 {%- endcomment -%}
 {%- assign area_escola = false -%}
 {%- assign inicio_url = page.url | slice: 0, 8 -%}
@@ -58,7 +59,11 @@
       <nav class="programs-nav" aria-label="Programas">
         {% for p in site.data.programas %}
           {% assign key = p[0] %}
+          {% if area_escola %}
+          <span style="--hl: var(--hl-{{ key }})">{{ p[1].nome }}</span>
+          {% else %}
           <a href="{{ '/' | append: key | append: '/' | relative_url }}" style="--hl: var(--hl-{{ key }})"{% if page.programa == key %} aria-current="page"{% endif %}>{{ p[1].nome }}</a>
+          {% endif %}
         {% endfor %}
         <a href="{{ '/escola/' | relative_url }}" style="--hl: var(--hl-escola)"{% if page.url == '/escola/' %} aria-current="page"{% endif %}>{{ site.data.escola.sigla }}</a>
       </nav>
