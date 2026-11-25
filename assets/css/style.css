@@ -138,7 +138,7 @@ p { margin: 0 0 1em; }
 .brand-role { font-size: 0.85rem; color: var(--muted); }
 
 .programs-nav { display: flex; gap: 4px; flex: 1; }
-.programs-nav a, .programs-nav span {
+.programs-nav a {
   text-decoration: none; color: var(--text);
   font-family: var(--display); font-weight: 640; font-stretch: 90%;
   padding: 6px 10px; border-radius: 4px;
@@ -149,7 +149,6 @@ p { margin: 0 0 1em; }
   transition: background-size 0.15s ease;
 }
 .programs-nav a:hover { background-size: 100% 35%; }
-.programs-nav span { cursor: default; }
 .programs-nav a[aria-current="page"] { background-size: 100% 100%; }
 
 .util-nav { display: flex; align-items: center; gap: 20px; }

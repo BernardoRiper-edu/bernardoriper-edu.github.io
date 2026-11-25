@@ -60,7 +60,7 @@
         {% for p in site.data.programas %}
           {% assign key = p[0] %}
           {% if area_escola %}
-          <span style="--hl: var(--hl-{{ key }})">{{ p[1].nome }}</span>
+          <a style="--hl: var(--hl-{{ key }})">{{ p[1].nome }}</a>
           {% else %}
           <a href="{{ '/' | append: key | append: '/' | relative_url }}" style="--hl: var(--hl-{{ key }})"{% if page.programa == key %} aria-current="page"{% endif %}>{{ p[1].nome }}</a>
           {% endif %}
