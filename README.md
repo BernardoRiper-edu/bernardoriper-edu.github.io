@@ -60,4 +60,6 @@ Com `aplicar_no_site_todo: true` a paleta da escola vale para o site inteiro; co
 Cada ano (Y7 a Y13) tem três pastas em `assets/materiais/<ano>/`: `material`, `lista` e `gabarito`.
 Para publicar um arquivo, suba o PDF na pasta certa — o site lista sozinho e abre o PDF numa janela com visualizador.
 O nome do arquivo é o que os alunos veem; a lista é ordenada pelo nome (Lista 2 vem antes de Lista 10).
-Os anos e os tipos ficam em `_data/escola.yml` (bloco `materiais`). O visualizador usa o PDF.js (em `assets/vendor/pdfjs/`).
+Os anos e os tipos ficam em `_data/escola.yml` (bloco `materiais`).
+
+Depois dos anos vem o quadrado **Todos**: livros em `assets/materiais/Todos/livros/` (abrem no mesmo visualizador) e o link do canal do YouTube, que se cola em `_data/escola.yml` (`materiais.todos.youtube`). O visualizador usa o PDF.js (em `assets/vendor/pdfjs/`).
