@@ -56,6 +56,15 @@ materiais:
     - pasta: "gabarito"
       titulo: "Gabaritos"
 
+  # Quadrado "Todos", depois dos anos: materiais para qualquer turma.
+  # Os livros ficam em assets/materiais/Todos/livros/ e abrem no mesmo visualizador.
+  todos:
+    nome: "Todos"
+    tipos:
+      - pasta: "livros"
+        titulo: "Livros"
+    youtube: ""   # cole aqui o link do canal; enquanto estiver vazio aparece "em breve"
+
 links_uteis:
   - titulo: "Calendário escolar"
     url: ""

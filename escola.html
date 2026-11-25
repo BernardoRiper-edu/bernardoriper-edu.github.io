@@ -58,6 +58,36 @@ description: "Materiais, avisos e plantão de dúvidas para os alunos."
         </ul>
       </section>
     {% endfor %}
+
+    {% assign todos = m.todos %}
+    {% if todos %}
+      <section class="year" aria-labelledby="ano-todos">
+        <h3 id="ano-todos"><span class="year-tag">{{ todos.nome }}</span></h3>
+        <ul class="year-rows">
+          {% for tipo in todos.tipos %}
+            <li>
+              <button type="button" class="year-row" data-ano="{{ todos.nome }}" data-tipo="{{ tipo.pasta }}" data-titulo="{{ tipo.titulo }}" disabled>
+                <span class="yr-name">{{ tipo.titulo }}</span>
+                <span class="yr-count">em breve</span>
+              </button>
+            </li>
+          {% endfor %}
+          <li>
+            {% if todos.youtube != "" and todos.youtube %}
+              <a class="year-row" href="{{ todos.youtube }}" target="_blank" rel="noopener">
+                <span class="yr-name">YouTube</span>
+                <span class="yr-count">abrir canal &nearr;</span>
+              </a>
+            {% else %}
+              <button type="button" class="year-row" disabled>
+                <span class="yr-name">YouTube</span>
+                <span class="yr-count">em breve</span>
+              </button>
+            {% endif %}
+          </li>
+        </ul>
+      </section>
+    {% endif %}
   </div>
 
   {% comment %} Lista de arquivos gerada pelo Jekyll a partir das pastas em assets/materiais/ {% endcomment %}
