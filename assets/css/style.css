@@ -621,6 +621,15 @@ a.year-row { text-decoration: none; box-sizing: border-box; }
 }
 .game-media img.contain { object-fit: contain; }
 
+/* janela "Horários de Clinics" (área da escola) */
+.brand:not([href]) { cursor: default; }
+.clinics-dialog { height: auto; max-height: min(92vh, 1000px); }
+.clinics-body { flex: 1; min-height: 0; overflow: auto; padding: 16px; background: var(--page); }
+.clinics-img { display: block; max-width: 100%; height: auto; margin: 0 auto; background: #fff; border-radius: 6px; }
+@media (max-width: 1000px) {
+  .util-nav a.clinics-link { display: inline; }
+}
+
 /* pílulas de modo de jogo */
 .game-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 0.4em; }
 .game-title h3 { margin: 0 4px 0 0; }

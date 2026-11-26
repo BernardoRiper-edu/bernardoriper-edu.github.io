@@ -51,7 +51,7 @@
 
   <header class="site-header">
     <div class="wrap header-row">
-      <a class="brand" href="{{ '/' | relative_url }}">
+      <a class="brand"{% unless area_escola %} href="{{ '/' | relative_url }}"{% endunless %}>
         <span class="brand-name">Bernardo Riper</span>
         <span class="brand-role">professor</span>
       </a>
@@ -69,7 +69,11 @@
       </nav>
 
       <nav class="util-nav" aria-label="Site">
+        {% if area_escola %}
+        <a class="clinics-link" href="#horarios-clinics" aria-haspopup="dialog">Horários de Clinics</a>
+        {% else %}
         <a href="{{ '/aulas/' | relative_url }}"{% if page.url == '/aulas/' %} aria-current="page"{% endif %}>Como funcionam as aulas</a>
+        {% endif %}
         {% unless area_escola %}
         <a href="{{ '/contato/' | relative_url }}"{% if page.url == '/contato/' %} aria-current="page"{% endif %}>Contato</a>
         {% include agendar.html classe="btn btn-small" %}
@@ -92,6 +96,39 @@
       <p class="muted">&copy; {{ 'now' | date: "%Y" }}</p>
     </div>
   </footer>
+
+  {% if area_escola %}
+  {% assign clinics_img = site.data.escola.clinics.imagem %}
+  <dialog class="mat-dialog clinics-dialog" id="horarios-clinics" aria-labelledby="clinics-title">
+    <div class="mat-head">
+      <div class="mat-titles">
+        <p class="mat-kicker">{{ site.data.escola.sigla }}</p>
+        <h2 id="clinics-title">Horários de Clinics</h2>
+      </div>
+      <button type="button" class="mat-icon mat-close" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="clinics-body">
+      {% if clinics_img and clinics_img != "" %}
+      <img src="{{ clinics_img | relative_url }}" alt="Tabela com os horários de Clinics" class="clinics-img"
+           onerror="this.hidden = true; this.nextElementSibling.hidden = false;">
+      <p class="mat-msg" hidden>Os horários de Clinics ainda não foram publicados.</p>
+      {% else %}
+      <p class="mat-msg">Os horários de Clinics ainda não foram publicados.</p>
+      {% endif %}
+    </div>
+  </dialog>
+  <script>
+    (function () {
+      var d = document.getElementById('horarios-clinics');
+      if (!d || typeof d.showModal !== 'function') return;
+      document.querySelectorAll('a[href="#horarios-clinics"]').forEach(function (a) {
+        a.addEventListener('click', function (e) { e.preventDefault(); d.showModal(); });
+      });
+      d.querySelector('.mat-close').addEventListener('click', function () { d.close(); });
+      d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+    })();
+  </script>
+  {% endif %}
 
   {% unless area_escola %}
   <dialog class="cal-dialog" id="cal-dialog" aria-label="Agendar aula">
