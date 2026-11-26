@@ -39,6 +39,14 @@ plantao:
   url: ""   # opcional: link de agendamento do plantão
 
 # -----------------------------------------------------------------
+#  HORÁRIOS DE CLINICS — imagem que abre ao clicar em "Horários de Clinics"
+#  no menu do topo. Troque o arquivo (mesmo nome) quando os horários mudarem.
+#  Enquanto o arquivo não existir, a janela mostra "ainda não foram publicados".
+# -----------------------------------------------------------------
+clinics:
+  imagem: /assets/escola/horarios-clinics.png
+
+# -----------------------------------------------------------------
 #  MATERIAIS POR ANO
 #  Os arquivos ficam em assets/materiais/<ano>/<tipo>/ — por exemplo:
 #    assets/materiais/Y9/lista/Lista 03 - Cinematica.pdf
