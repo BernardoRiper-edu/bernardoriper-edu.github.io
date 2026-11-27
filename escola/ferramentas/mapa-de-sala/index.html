@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mapa de Sala 3D</title>
+<title>ClassMap 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -148,7 +148,7 @@ label.f{display:grid;gap:4px;font-size:13px;color:var(--mute)}
  <aside id="side">
   <header class="brand" id="brand">
    <div class="logo" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 26 26"><g fill="#fff"><rect x="2" y="3" width="22" height="4" rx="1.5"/><rect x="3" y="11" width="6" height="4" rx="1"/><rect x="10" y="11" width="6" height="4" rx="1"/><rect x="17" y="11" width="6" height="4" rx="1"/><rect x="3" y="18" width="6" height="4" rx="1"/><rect x="10" y="18" width="6" height="4" rx="1"/><rect x="17" y="18" width="6" height="4" rx="1"/></g></svg></div>
-   <div class="t"><h1>Mapa de sala</h1><p>Organize os lugares da turma numa sala 3D</p></div>
+   <div class="t"><h1>Class<span style="color:var(--accent)">Map</span> 3D</h1><p>Organize os lugares da turma numa sala 3D</p></div>
    <button class="sheetbtn" id="sheetBtn" aria-expanded="false">Menu</button>
   </header>
   <div class="side-scroll" id="sideScroll">
@@ -830,7 +830,7 @@ function drawExport(){const S=140,M=64,TOP=140,W=Math.round(ROOM.w*S+2*M),H=Math
  x.font=`400 19px ${FONT}`;x.fillStyle='#5e6572';x.fillText([cls,new Date().toLocaleDateString('pt-BR'),`${n} alunos`,`${S2.length} lugares`,PRESETS.find(p=>p.id===activePreset)?.name||'formação personalizada'].filter(Boolean).join(' · '),M,94);
  x.textAlign='center';x.font=`500 16px ${FONT}`;x.fillText('Frente da sala',W/2,TOP-14);
  drawRoom(x,S,M,TOP,false);
- x.textAlign='left';x.font=`400 15px ${FONT}`;x.fillStyle='#8a909b';x.fillText('Gerado no Mapa de sala 3D',M,H-22);
+ x.textAlign='left';x.font=`400 15px ${FONT}`;x.fillStyle='#8a909b';x.fillText('Gerado no ClassMap 3D',M,H-22);
  return c;}
 // ---------- live 2D preview
 const pv=$('#pv');let pvDirty=true,pvGeom=null;
