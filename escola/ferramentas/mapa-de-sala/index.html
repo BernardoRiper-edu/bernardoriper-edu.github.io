@@ -75,6 +75,10 @@ h2 small{font-weight:400;color:var(--mute);font-size:13px}
 .fcard.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .tf{fill:light-dark(#f1e7d6,#3a3530);stroke:light-dark(#9b8e78,#6d6457);stroke-width:.08}
 .tb{fill:light-dark(#9fb3c6,#6f8296)}.tt{fill:#b98656}.td{fill:light-dark(#d6a865,#c99a5a)}.tc{fill:#2f80c2}
+.rooms{display:grid;gap:6px;max-height:236px;overflow-y:auto;border:1px solid var(--line);border-radius:14px;padding:6px;background:var(--soft);overscroll-behavior:contain}
+.room{display:grid;gap:1px;text-align:left;background:var(--panel);padding:8px 12px;min-height:52px}
+.room b{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.room span{font-size:13px;color:var(--mute);font-weight:400}
+.room.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .add button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;font-size:13px;line-height:1.2}
@@ -153,9 +157,11 @@ label.f{display:grid;gap:4px;font-size:13px;color:var(--mute)}
   </header>
   <div class="side-scroll" id="sideScroll">
    <section>
-    <h2>Sala e turma</h2>
+    <h2>Minhas salas <small id="savedAt"></small></h2>
+    <div class="rooms" id="roomList" role="list"></div>
+    <div class="grid3" style="margin:8px 0 14px"><button id="roomNew">Nova sala</button><button id="roomDup">Duplicar</button><button class="danger" id="roomDel">Excluir</button></div>
     <div class="grid2"><label class="f">Nome da sala<input id="roomName" placeholder="Ex.: Sala 12" maxlength="40"></label><label class="f">Turma<input id="className" placeholder="Ex.: Year 9 · Mat." maxlength="60"></label></div>
-    <p class="note">O nome da sala aparece no canto superior esquerdo da visão superior, da pré-visualização e da imagem exportada.</p>
+    <p class="note">Cada sala fica salva sozinha, só neste navegador e para quem o usa. O nome aparece no canto superior esquerdo da visão superior, da pré-visualização e da imagem exportada. Para levar uma sala a outro aparelho, use “Salvar sala (.json)”.</p>
    </section>
    <section>
     <h2>Formações <small>toque para aplicar</small></h2>
@@ -194,7 +200,7 @@ label.f{display:grid;gap:4px;font-size:13px;color:var(--mute)}
     <h2>Arquivo</h2>
     <div class="stack">
      <button class="primary" id="exportBtn">Exportar formação (visão superior)</button>
-     <div class="grid2"><button id="saveJson">Salvar sala (.json)</button><button id="openJson">Abrir sala (.json)</button></div>
+     <div class="grid2"><button id="saveJson">Salvar sala (.json)</button><button id="openJson">Importar sala (.json)</button></div>
      <div class="grid2"><button id="undo" disabled title="Ctrl+Z">Desfazer</button><button id="redo" disabled title="Ctrl+Shift+Z">Refazer</button></div>
      <p class="note" style="margin:0">Atalhos: Ctrl+Z desfaz, Ctrl+Shift+Z (ou Ctrl+Y) refaz, Ctrl+C copia e Ctrl+V cola uma cópia do que estiver selecionado (Ctrl+D também duplica).</p>
      <input type="file" id="file" accept=".json,application/json" hidden>
@@ -614,11 +620,41 @@ $('#undo').onclick=undo;$('#undoF').onclick=undo;$('#redo').onclick=redo;$('#red
 function undo(){const s=undoStack.pop();if(!s){toast('Nada para desfazer');return;}redoStack.push(JSON.stringify(serialize()));applyState(JSON.parse(s));updateUR();changed();toast('Desfeito');}
 function redo(){const s=redoStack.pop();if(!s){toast('Nada para refazer');return;}undoStack.push(JSON.stringify(serialize()));applyState(JSON.parse(s));updateUR();changed();toast('Refeito');}
 let saveT=0;
-function changed(){updateCount();renderSel();pvDirty=true;if(comboCount()!==thumbN&&(comboCount()||20)!==thumbN)renderFormations();clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('mapa-sala-3d',JSON.stringify(serialize()));}catch(e){}},400);}
+// ---------- "Minhas salas": several layouts kept in this browser's localStorage
+const STORE='classmap-salas';let rooms={current:null,list:[]};
+const newRid=()=>'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function loadStore(){try{const r=JSON.parse(localStorage.getItem(STORE)||'null');if(r&&Array.isArray(r.list))rooms={current:r.current,list:r.list.filter(x=>x&&x.id&&x.state&&Array.isArray(x.state.items))};}catch(e){}
+ if(!rooms.list.length){try{const old=JSON.parse(localStorage.getItem('mapa-sala-3d')||'null');if(old&&Array.isArray(old.items)&&old.items.length){const id=newRid();rooms={current:id,list:[{id,updated:Date.now(),state:old}]};}}catch(e){}}
+ if(!rooms.list.some(x=>x.id===rooms.current))rooms.current=rooms.list[0]?.id||null;}
+let storeWarned=false;
+function saveStore(){try{localStorage.setItem(STORE,JSON.stringify(rooms));$('#savedAt').textContent='salvo às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(e){$('#savedAt').textContent='não salvo';if(!storeWarned){storeWarned=true;toast('Este navegador não deixou salvar — use “Salvar sala (.json)”');}}}
+function saveCurrent(){clearTimeout(saveT);let r=rooms.list.find(x=>x.id===rooms.current);if(!r){r={id:newRid()};rooms.list.unshift(r);rooms.current=r.id;}r.state=serialize();r.updated=Date.now();saveStore();renderRooms();}
+const roomTitle=st=>[st.roomName,st.className].map(v=>typeof v==='string'?v.trim():'').filter(Boolean).join(' · ')||'Sala sem nome';
+function whenTxt(t){if(!t)return'';const d=new Date(t),n=new Date();const hm=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===n.toDateString()?`hoje às ${hm}`:d.toLocaleDateString('pt-BR')+` às ${hm}`;}
+function renderRooms(){const el=$('#roomList');el.textContent='';
+ for(const r of rooms.list){const b=document.createElement('button');b.className='room'+(r.id===rooms.current?' on':'');b.setAttribute('role','listitem');if(r.id===rooms.current)b.setAttribute('aria-current','true');
+  const t=document.createElement('b'),m=document.createElement('span'),its=r.state.items||[];t.textContent=roomTitle(r.state);
+  const na=its.filter(i=>i.student).length,nl=its.filter(i=>i.type==='combo'||i.type==='chair').length;m.textContent=`${na} ${na===1?'aluno':'alunos'} · ${nl} ${nl===1?'lugar':'lugares'} · ${whenTxt(r.updated)}`;
+  b.append(t,m);b.onclick=()=>openRoom(r.id);el.appendChild(b);}
+ $('#roomDel').disabled=!rooms.list.length;}
+function defaultState(){return{v:3,preset:'pares',roomName:'',className:'',names:'',fixtures:DEFAULT_FIX(),items:[{id:'teacher',type:'teacher',x:3.25,z:-3.375,r:PI,student:null},...SLOTS.pares.slice(0,20).map((q,k)=>({id:'i'+(k+1),type:'combo',x:q.x,z:q.z,r:q.r,student:null}))]};}
+function openRoom(id,flush=true){const r=rooms.list.find(x=>x.id===id);if(!r||id===rooms.current&&flush)return;if(flush&&rooms.list.some(x=>x.id===rooms.current))saveCurrent();
+ rooms.current=id;undoStack.length=0;redoStack.length=0;updateUR();select(null);selectFix(null);
+ const st={roomName:'',className:'',names:'',preset:'',...r.state};if(!Array.isArray(st.fixtures))st.fixtures=DEFAULT_FIX();
+ applyState(st);changed();saveCurrent();toast(`Sala: ${roomTitle(st)}`);}
+$('#roomNew').onclick=()=>{saveCurrent();const id=newRid();rooms.list.unshift({id,updated:Date.now(),state:defaultState()});openRoom(id);setTimeout(()=>{if(!narrow.matches)$('#roomName').focus();},50);toast('Sala nova — dê um nome e cole a lista de alunos');};
+$('#roomDup').onclick=()=>{saveCurrent();const st=serialize();st.roomName=(st.roomName||'Sala')+' (cópia)';const id=newRid();const i=rooms.list.findIndex(x=>x.id===rooms.current);rooms.list.splice(i+1,0,{id,updated:Date.now(),state:st});openRoom(id);};
+let delArm=0;
+$('#roomDel').onclick=()=>{const b=$('#roomDel');if(!delArm){delArm=setTimeout(()=>{delArm=0;b.textContent='Excluir';b.classList.remove('primary');},3500);b.textContent='Confirmar';b.classList.add('primary');return;}
+ clearTimeout(delArm);delArm=0;b.textContent='Excluir';b.classList.remove('primary');clearTimeout(saveT);
+ const i=rooms.list.findIndex(x=>x.id===rooms.current),gone=rooms.list[i];if(i<0)return;rooms.list.splice(i,1);
+ if(!rooms.list.length)rooms.list.push({id:newRid(),updated:Date.now(),state:defaultState()});
+ rooms.current=null;openRoom(rooms.list[Math.max(0,i-1)].id,false);toast(`Sala “${roomTitle(gone.state)}” excluída`);};
+function changed(){updateCount();renderSel();pvDirty=true;if(comboCount()!==thumbN&&(comboCount()||20)!==thumbN)renderFormations();$('#sampleNote').hidden=$('#names').value!==SAMPLE.join('\n');clearTimeout(saveT);saveT=setTimeout(saveCurrent,500);}
 $('#className').addEventListener('input',()=>changed());
 $('#roomName').addEventListener('input',()=>{updateRoomTag();changed();});
 function updateRoomTag(){const n=$('#roomName').value.trim(),t=$('#roomTag');t.textContent=n;t.hidden=!(n&&cam.view==='top');}
-$('#names').addEventListener('input',()=>{$('#sampleNote').hidden=true;changed();});
+$('#names').addEventListener('input',()=>changed());
 
 // ---------- students UI
 function parseNames(){const seen=new Set();return $('#names').value.split(/[\n;]+/).map(s=>s.trim().slice(0,40)).filter(s=>s&&!seen.has(s)&&seen.add(s));}
@@ -860,7 +896,7 @@ async function offer(filename,data,mime){
 $('#mSave').onclick=()=>{if(!exportCanvas)return;exportCanvas.toBlob(b=>{if(b)offer(`mapa-de-sala-${slug()}.png`,b,'image/png');},'image/png');};
 $('#saveJson').onclick=()=>offer(`sala-${slug()}.json`,JSON.stringify(serialize(),null,1),'application/json');
 $('#openJson').onclick=()=>$('#file').click();
-$('#file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const s=JSON.parse(await f.text());if(!s||!Array.isArray(s.items))throw 0;if(typeof s.preset!=='string')s.preset='';pushUndo();applyState(s);changed();toast('Sala carregada');}catch(err){toast('Arquivo inválido');}};
+$('#file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const s=JSON.parse(await f.text());if(!s||!Array.isArray(s.items))throw 0;if(typeof s.preset!=='string')s.preset='';saveCurrent();const id=newRid();rooms.list.unshift({id,updated:Date.now(),state:s});openRoom(id);toast('Sala importada para “Minhas salas”');}catch(err){toast('Arquivo inválido');}};
 
 // ---------- toast
 let toastT=0;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
@@ -897,10 +933,12 @@ const grids=[makeGrid(SNAP,.16),makeGrid(.5,.38)];
 
 // ---------- init
 buildRoom();
-let restored=false;
-try{const raw=localStorage.getItem('mapa-sala-3d');if(raw){const s=JSON.parse(raw);if(s&&Array.isArray(s.items)&&s.items.length){applyState(s,true);restored=true;$('#sampleNote').hidden=true;}}}catch(e){}
+let restored=false;loadStore();
+{const r=rooms.list.find(x=>x.id===rooms.current);if(r){const st={roomName:'',className:'',names:'',preset:'',...r.state};if(!Array.isArray(st.fixtures))st.fixtures=DEFAULT_FIX();applyState(st,true);restored=true;}}
+addEventListener('pagehide',()=>{if(saveT)saveCurrent();});
+
 if(!restored){createItem('teacher',3.25,-3.375,PI,null,'teacher');SLOTS.pares.slice(0,20).forEach((p,k)=>{const it=createItem('combo',p.x,p.z,p.r);setStudent(it,SAMPLE[k],.3+k*.06);});$('#names').value=SAMPLE.join('\n');}
-renderFormations();updateCount();
+renderFormations();updateCount();if(!restored)saveCurrent();else{saveStore();renderRooms();$('#sampleNote').hidden=$('#names').value!==SAMPLE.join('\n');}
 const ro=new ResizeObserver(()=>{const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);persp.aspect=w/Math.max(1,h);persp.updateProjectionMatrix();if(cam.view!=='free'&&!camAnim)cam.half=fitHalf(cam.theta,cam.phi,cam.target);});ro.observe(stage);
 {const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);persp.aspect=w/Math.max(1,h);persp.updateProjectionMatrix();}
 cam.radius=fitRadius();setView('free',true);
