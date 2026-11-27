@@ -12,3 +12,8 @@
   descricao: "Monte sólidos geométricos em 3D, ajuste as dimensões e veja faces, arestas, vértices, área e volume. Combine sólidos com operações booleanas (união, interseção, diferença) e abra a planificação com uma animação."
   url: /escola/ferramentas/solidview/
   imagem: /assets/ferramentas/solidview.jpg
+
+- titulo: "Mapa de Sala 3D"
+  descricao: "Organize os lugares da turma numa sala 3D: escolha entre 14 formações com uso pedagógico, sente os alunos nas carteiras e exporte o mapa em visão superior com os nomes sobre as mesas."
+  url: /escola/ferramentas/mapa-de-sala/
+  imagem: /assets/ferramentas/mapa-de-sala.jpg
