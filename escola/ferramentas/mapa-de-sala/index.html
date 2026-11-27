@@ -160,8 +160,8 @@ label.f{display:grid;gap:4px;font-size:13px;color:var(--mute)}
     <h2>Minhas salas <small id="savedAt"></small></h2>
     <div class="rooms" id="roomList" role="list"></div>
     <div class="grid3" style="margin:8px 0 14px"><button id="roomNew">Nova sala</button><button id="roomDup">Duplicar</button><button class="danger" id="roomDel">Excluir</button></div>
-    <div class="grid2"><label class="f">Nome da sala<input id="roomName" placeholder="Ex.: Sala 12" maxlength="40"></label><label class="f">Turma<input id="className" placeholder="Ex.: Year 9 · Mat." maxlength="60"></label></div>
-    <p class="note">Cada sala fica salva sozinha, só neste navegador e para quem o usa. O nome aparece no canto superior esquerdo da visão superior, da pré-visualização e da imagem exportada. Para levar uma sala a outro aparelho, use “Salvar sala (.json)”.</p>
+    <div class="grid2"><label class="f">Turma<input id="className" placeholder="Ex.: Year 9 · Mat." maxlength="60"></label><label class="f">Nome da sala<input id="roomName" placeholder="Ex.: Sala 12" maxlength="40"></label></div>
+    <p class="note">Cada sala fica salva sozinha, só neste navegador e para quem o usa. A turma aparece em destaque como título da imagem exportada e da pré-visualização; o nome da sala vem logo abaixo e aparece no canto superior esquerdo da visão superior. Para levar uma sala a outro aparelho, use “Salvar sala (.json)”.</p>
    </section>
    <section>
     <h2>Formações <small>toque para aplicar</small></h2>
@@ -629,7 +629,7 @@ function loadStore(){try{const r=JSON.parse(localStorage.getItem(STORE)||'null')
 let storeWarned=false;
 function saveStore(){try{localStorage.setItem(STORE,JSON.stringify(rooms));$('#savedAt').textContent='salvo às '+new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}catch(e){$('#savedAt').textContent='não salvo';if(!storeWarned){storeWarned=true;toast('Este navegador não deixou salvar — use “Salvar sala (.json)”');}}}
 function saveCurrent(){clearTimeout(saveT);let r=rooms.list.find(x=>x.id===rooms.current);if(!r){r={id:newRid()};rooms.list.unshift(r);rooms.current=r.id;}r.state=serialize();r.updated=Date.now();saveStore();renderRooms();}
-const roomTitle=st=>[st.roomName,st.className].map(v=>typeof v==='string'?v.trim():'').filter(Boolean).join(' · ')||'Sala sem nome';
+const roomTitle=st=>[st.className,st.roomName].map(v=>typeof v==='string'?v.trim():'').filter(Boolean).join(' · ')||'Sala sem nome';
 function whenTxt(t){if(!t)return'';const d=new Date(t),n=new Date();const hm=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===n.toDateString()?`hoje às ${hm}`:d.toLocaleDateString('pt-BR')+` às ${hm}`;}
 function renderRooms(){const el=$('#roomList');el.textContent='';
  for(const r of rooms.list){const b=document.createElement('button');b.className='room'+(r.id===rooms.current?' on':'');b.setAttribute('role','listitem');if(r.id===rooms.current)b.setAttribute('aria-current','true');
@@ -862,8 +862,8 @@ function drawExport(){const S=140,M=64,TOP=140,W=Math.round(ROOM.w*S+2*M),H=Math
  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
  x.fillStyle='#fff';x.fillRect(0,0,W,H);
  const cls=$('#className').value.trim(),room=$('#roomName').value.trim(),S2=seats(),n=S2.filter(s=>s.student).length;
- x.fillStyle='#1f2430';x.textAlign='left';x.textBaseline='alphabetic';fitText(x,room||'Mapa de sala',M,62,W-2*M,40);
- x.font=`400 19px ${FONT}`;x.fillStyle='#5e6572';x.fillText([cls,new Date().toLocaleDateString('pt-BR'),`${n} alunos`,`${S2.length} lugares`,PRESETS.find(p=>p.id===activePreset)?.name||'formação personalizada'].filter(Boolean).join(' · '),M,94);
+ x.fillStyle='#1f2430';x.textAlign='left';x.textBaseline='alphabetic';fitText(x,cls||room||'Mapa de sala',M,64,W-2*M,cls?50:40,700);
+ x.font=`400 19px ${FONT}`;x.fillStyle='#5e6572';x.fillText([cls?room:'',new Date().toLocaleDateString('pt-BR'),`${n} alunos`,`${S2.length} lugares`,PRESETS.find(p=>p.id===activePreset)?.name||'formação personalizada'].filter(Boolean).join(' · '),M,94);
  x.textAlign='center';x.font=`500 16px ${FONT}`;x.fillText('Frente da sala',W/2,TOP-14);
  drawRoom(x,S,M,TOP,false);
  x.textAlign='left';x.font=`400 15px ${FONT}`;x.fillStyle='#8a909b';x.fillText('Gerado no ClassMap 3D',M,H-22);
@@ -874,9 +874,9 @@ function drawPreview(){pvDirty=false;const dpr=Math.min(devicePixelRatio||1,2),w
  if(pv.width!==Math.round(w*dpr)||pv.height!==Math.round(h*dpr)){pv.width=Math.round(w*dpr);pv.height=Math.round(h*dpr);}
  const x=pv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.fillStyle='#fff';x.fillRect(0,0,w,h);
  const TH=clamp(w*.055,15,22),S=Math.min((w-8)/ROOM.w,(h-TH-8)/ROOM.d),ox=(w-ROOM.w*S)/2,oy=TH+4+(h-TH-8-ROOM.d*S)/2;pvGeom={S,ox,oy};
- const room=$('#roomName').value.trim();x.textBaseline='alphabetic';
+ const room=[$('#className').value.trim(),$('#roomName').value.trim()].filter(Boolean)[0]||'';x.textBaseline='alphabetic';
  x.fillStyle='#7a808b';x.font=`500 ${clamp(S*.28,9,12)}px ${FONT}`;x.textAlign='right';const lab='Frente da sala';x.fillText(lab,ox+ROOM.w*S,oy-6);const lw2=x.measureText(lab).width;
- x.textAlign='left';x.fillStyle=room?'#1f2430':'#9aa0aa';fitText(x,room||'Sala sem nome',ox,oy-6,ROOM.w*S-lw2-12,Math.round(TH*.8),room?700:500);
+ x.textAlign='left';x.fillStyle=room?'#1f2430':'#9aa0aa';fitText(x,room||'Turma sem nome',ox,oy-6,ROOM.w*S-lw2-12,Math.round(TH*.85),room?700:500);
  drawRoom(x,S,ox,oy,true,selected);}
 new ResizeObserver(()=>{pvDirty=true;}).observe(pv);
 pv.addEventListener('click',e=>{if(!pvGeom)return;const r=pv.getBoundingClientRect(),wx=(e.clientX-r.left-pvGeom.ox)/pvGeom.S-HW,wz=(e.clientY-r.top-pvGeom.oy)/pvGeom.S-HD;
@@ -889,7 +889,7 @@ function openExport(){exportCanvas=drawExport();$('#mImg').src=exportCanvas.toDa
 $('#exportBtn').onclick=openExport;
 function closeModal(){$('#modal').hidden=true;}
 $('#mClose').onclick=closeModal;$('#mDone').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
-const slug=()=>([$('#roomName').value.trim(),$('#className').value.trim()].filter(Boolean).join(' ')||'turma').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase()||'turma';
+const slug=()=>([$('#className').value.trim(),$('#roomName').value.trim()].filter(Boolean).join(' ')||'turma').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase()||'turma';
 async function offer(filename,data,mime){
  if(downloads){try{await downloads.save({filename,data});toast('Arquivo salvo');return;}catch(err){if(err?.code==='declined')return;if(err?.code==='host_unavailable'){toast('Abra num navegador ou computador para baixar');return;}}}
  try{const blob=data instanceof Blob?data:new Blob([data],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('Download iniciado');}catch(e){toast('Não foi possível baixar aqui');}}
